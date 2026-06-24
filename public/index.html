@@ -1,0 +1,3491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TPL SOW Generator — TransPerfect Legal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPL SOW Generator</title>
+<style>
+  /* ═══════════════════════════════════════
+     RESET & BASE
+  ═══════════════════════════════════════ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:    #001F5F;
+    --teal:    #139DD8;
+    --light:   #F4F7FB;
+    --border:  #D8E4F0;
+    --muted:   #7A8FA6;
+    --text:    #1A1A1A;
+    --white:   #FFFFFF;
+    --success: #27AE60;
+    --radius:  8px;
+    --shadow:  0 2px 12px rgba(0,31,95,0.08);
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: var(--light);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════════════════════════════════════
+     WIZARD SHELL
+  ═══════════════════════════════════════ */
+  #wizard {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Top bar ── */
+  .wiz-topbar {
+    background: var(--navy);
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .brand {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--white);
+    letter-spacing: 0.02em;
+  }
+  .brand span { color: var(--teal); }
+  .subtitle {
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── Step bar ── */
+  .step-bar {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: stretch;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .step-bar::-webkit-scrollbar { display: none; }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    cursor: default;
+    position: relative;
+  }
+  .step-item.active {
+    color: var(--navy);
+    border-bottom-color: var(--teal);
+    font-weight: 600;
+  }
+  .step-item.done {
+    color: var(--success);
+  }
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-item.active .step-num {
+    background: var(--navy);
+    color: white;
+  }
+  .step-item.done .step-num {
+    background: var(--success);
+    color: white;
+  }
+
+  /* ── Content area ── */
+  .wiz-content {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .step-page {
+    display: none;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 100px;
+  }
+  .step-page.active { display: block; }
+
+  /* ── Footer ── */
+  .wiz-footer {
+    background: white;
+    border-top: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    box-shadow: 0 -2px 8px rgba(0,31,95,0.05);
+  }
+  #step-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════
+     TYPOGRAPHY
+  ═══════════════════════════════════════ */
+  .section-heading {
+    font-family: 'Poppins', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  /* ═══════════════════════════════════════
+     FORMS
+  ═══════════════════════════════════════ */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .form-group.span2 { grid-column: span 2; }
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  input[type="text"], input[type="email"], input[type="date"],
+  input[type="number"], select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(19,157,216,0.12);
+  }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A8FA6' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+  /* ═══════════════════════════════════════
+     SERVICE / OPTION CARDS
+  ═══════════════════════════════════════ */
+  .service-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 20px;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.18s;
+    margin-bottom: 10px;
+    user-select: none;
+  }
+  .service-card:hover { border-color: var(--teal); box-shadow: var(--shadow); }
+  .service-card.selected {
+    border-color: var(--teal);
+    background: #F0F8FD;
+  }
+  .toggle-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all 0.18s;
+  }
+  .service-card.selected .toggle-btn {
+    background: var(--teal);
+    border-color: var(--teal);
+    position: relative;
+  }
+  .service-card.selected .toggle-btn::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 5px;
+    width: 6px; height: 10px;
+    border: 2px solid white;
+    border-top: none; border-left: none;
+    transform: rotate(45deg);
+  }
+  .service-card-body h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .service-card-body p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ═══════════════════════════════════════
+     INFO / NOTICE BOXES
+  ═══════════════════════════════════════ */
+  .info-box {
+    background: #EBF5FB;
+    border: 1px solid #C5E3F5;
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #1A6A9A;
+    margin-bottom: 20px;
+  }
+  .notice {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 16px;
+  }
+
+  /* ═══════════════════════════════════════
+     FEE TABLES (wizard)
+  ═══════════════════════════════════════ */
+  .fee-section { margin-bottom: 28px; }
+  .fee-section-header {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 10px 0 8px;
+    border-bottom: 2px solid var(--navy);
+    margin-bottom: 0;
+  }
+  .fee-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .fee-table thead tr { background: var(--navy); }
+  .fee-table th {
+    color: white;
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .fee-table th.right { text-align: right; }
+  .fee-table tbody tr { border-bottom: 1px solid var(--border); }
+  .fee-table tbody tr:hover { background: #F8FBFD; }
+  .fee-table td { padding: 9px 12px; color: var(--text); vertical-align: middle; }
+  .fee-table td.right { text-align: right; }
+  .fee-table input[type="number"] {
+    width: 90px; padding: 4px 8px; border: 1.5px solid var(--teal);
+    border-radius: 4px; text-align: right; font-size: 13px;
+  }
+  .fee-table .floor-note { font-size: 10px; color: #E74C3C; display: block; }
+  .fee-subheader td {
+    background: #DEEAF6;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 6px 12px;
+  }
+
+  /* ── Grand total ── */
+  .grand-total-box {
+    background: var(--navy);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    border-radius: var(--radius);
+    margin-top: 20px;
+  }
+  .grand-total-box .label { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .grand-total-box .amount { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; }
+
+  /* ═══════════════════════════════════════
+     PHASE PREVIEW
+  ═══════════════════════════════════════ */
+  #phase-preview {
+    background: #F0F8FD;
+    border: 1px solid #C5E3F5;
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--navy);
+    margin-top: 12px;
+  }
+
+  /* ═══════════════════════════════════════
+     PREVIEW STEP
+  ═══════════════════════════════════════ */
+  .preview-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  #sow-preview-container {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  /* ═══════════════════════════════════════
+     BUTTONS
+  ═══════════════════════════════════════ */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary   { background: var(--teal); color: white; }
+  .btn-primary:hover   { background: #0E87BC; }
+  .btn-secondary { background: white; color: var(--navy); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--navy); background: #F4F7FB; }
+  .btn-navy      { background: var(--navy); color: white; }
+  .btn-navy:hover      { background: #002E8A; }
+
+  /* ── Back button ── */
+  #btn-back {
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    padding: 9px 18px;
+  }
+  #btn-back:hover { border-color: var(--navy); color: var(--navy); }
+
+
+  /* ═══════════════════════════════════════
+     SOW Document Styles
+  ═══════════════════════════════════════ */
+.sow-doc {
+    background: white;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 10.2pt;
+    line-height: 1.55;
+    color: #1A1A1A;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    -webkit-hyphens: none;
+    hyphens: none;
+  }
+
+  .sow-cover {
+    background: white;
+    page-break-after: always;
+  }
+  .sow-cover-top-img { display: none; }
+  .sow-cover-logo-area {
+    text-align: center;
+    padding: 60px 60px 32px;
+    border-bottom: 2px solid #001F5F;
+    margin-bottom: 36px;
+  }
+  .sow-cover-logo {
+    height: 60px;
+    width: auto;
+    display: block;
+    margin: 0 auto 22px auto;
+  }
+  .sow-cover-subtitle {
+    font-family: 'Poppins', sans-serif;
+    font-size: 15pt;
+    font-weight: 700;
+    color: #001F5F;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .sow-cover-content {
+    padding: 0 60px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+
+  .sow-parties-table {
+    width: 60%;
+    border-collapse: collapse;
+    margin: 0 auto 20px auto;
+    font-family: 'Poppins', sans-serif;
+    font-size: 9pt;
+    table-layout: fixed;
+  }
+  .sow-parties-table col.col-for { width: 50%; }
+  .sow-parties-table col.col-by  { width: 50%; }
+  .sow-parties-table th {
+    font-weight: 700;
+    font-size: 8pt;
+    letter-spacing: 0.06em;
+    color: #001F5F;
+    text-transform: uppercase;
+    padding: 0 8px 6px;
+  }
+  .sow-parties-table th.col-for { text-align: right; }
+  .sow-parties-table th.col-by  { text-align: left;  }
+  .sow-parties-table td {
+    padding: 2px 8px;
+    vertical-align: top;
+    line-height: 1.45;
+    font-size: 9pt;
+  }
+  .sow-parties-table td.col-for { text-align: right; }
+  .sow-parties-table td.col-by  { text-align: left;  }
+
+  .sow-date-line {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 9pt;
+    color: #001F5F;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  .sow-body {
+    padding: 28px 50px 40px;
+  }
+
+  .sow-intro {
+    font-family: 'Poppins', sans-serif;
+    text-align: justify;
+    margin-bottom: 20px;
+    font-size: 10.2pt;
+  }
+  /* Justify all body text globally */
+  .sow-body p,
+  .sow-body li,
+  .sow-ul li,
+  .sow-responsibility-ul li,
+  .sow-responsibility-prose p,
+  .sow-tc-columns p,
+  .sow-tc-body p,
+  .sow-tc-body li,
+  .sow-footnote {
+    text-align: justify;
+  }
+
+  .sow-rule {
+    width: 60%;
+    border: none;
+    border-top: 2px solid #001F5F;
+    margin: 22px auto;
+  }
+  .sow-mini-rule {
+    width: 55%;
+    border: none;
+    border-top: 1px solid #001F5F;
+    margin: 16px auto 18px;
+  }
+  .sow-footnote {
+    font-family: 'Poppins', sans-serif;
+    font-size: 7.8pt;
+    color: #444;
+    margin-top: 20px;
+    padding-top: 8px;
+    border-top: 1px solid #ccc;
+    line-height: 1.5;
+  }
+
+  .sow-section-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 13.8pt;
+    color: #001F5F;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 24px 0 16px;
+  }
+
+  .sow-phase-heading {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 13.2pt;
+    color: #139DD8;
+    margin: 18px 0 8px;
+  }
+
+  .sow-phase-heading .phase-label {
+    font-weight: 400;
+    color: #001F5F;
+  }
+
+  .sow-ul {
+    padding-left: 20px;
+    margin-bottom: 10px;
+  }
+  .sow-ul li {
+    margin-bottom: 5px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 10.2pt;
+  }
+  .sow-ul.sub {
+    list-style-type: circle;
+    padding-left: 36px;
+    margin-top: 4px;
+  }
+
+  /* Pricing tables inside SOW */
+  .sow-pricing-block { margin: 20px 0; }
+  .sow-pricing-block-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 10.8pt;
+    color: #139DD8;
+    border-bottom: 2px solid #139DD8;
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .sow-fee-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4px;
+    font-size: 9pt;
+  }
+  .sow-fee-table .tbl-header th {
+    background: #001F5F;
+    color: white;
+    padding: 7px 10px;
+    font-weight: 700;
+    font-size: 7.8pt;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .sow-fee-table .tbl-header th:last-child { text-align: right; }
+  .sow-fee-table .tbl-subheader td {
+    background: #DEEAF6;
+    font-weight: 700;
+    color: #001F5F;
+    padding: 5px 10px;
+    font-size: 7.8pt;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .sow-fee-table tbody tr td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #C5D5E8;
+    font-family: 'Poppins', sans-serif;
+    font-size: 9pt;
+  }
+  .sow-fee-table tbody tr:last-child td { border-bottom: none; }
+  .sow-fee-table .rate-cell { text-align: right; font-weight: 600; }
+  .sow-fee-table .total-row td {
+    background: #001F5F;
+    color: white;
+    font-weight: 700;
+    font-size: 9pt;
+    padding: 7px 10px;
+  }
+  .sow-fee-table .total-row td:last-child { text-align: right; }
+  .sow-fee-table .subtotal-row td {
+    background: #DEEAF6;
+    font-weight: 700;
+    color: #001F5F;
+    padding: 5px 10px;
+  }
+  .sow-fee-table .subtotal-row td:last-child { text-align: right; }
+  .sow-fee-table .note-cell td {
+    background: #FFFBF0;
+    color: #666;
+    font-style: italic;
+    font-size: 8pt;
+    padding: 5px 10px;
+    border-top: 1px dashed #DDD;
+  }
+
+  .sow-payment-terms {
+    margin-top: 16px;
+    font-size: 9pt;
+  }
+  .sow-payment-terms p { margin-bottom: 6px; }
+  .sow-payment-terms ul {
+    padding-left: 20px;
+    margin-bottom: 6px;
+  }
+
+  .sow-tc-heading {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 9pt;
+    column-span: all;
+    color: #001F5F;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 18px 0 8px;
+    border-bottom: 1px solid #DEEAF6;
+    padding-bottom: 4px;
+  }
+  .sow-tc-body {
+    font-family: 'Poppins', sans-serif;
+    font-size: 9pt;
+    line-height: 1.6;
+    color: #2A2A2A;
+  }
+  .sow-tc-body p { margin-bottom: 6px; }
+  .sow-tc-body ul li { margin-bottom: 4px; }
+  .sow-tc-columns {
+    font-family: 'Poppins', sans-serif;
+    font-size: 8pt;
+    line-height: 1.55;
+    color: #2A2A2A;
+    width: 100%;
+  }
+  /* Two-column table layout for html2pdf compatibility */
+    .sow-tc-columns {
+    column-count: 2;
+    column-gap: 28px;
+    column-rule: 1px solid #DEEAF6;
+    font-family: 'Poppins', sans-serif;
+    font-size: 7.8pt;
+    line-height: 1.5;
+    color: #2A2A2A;
+    text-align: justify;
+    orphans: 2;
+    widows: 2;
+  }
+  .sow-tc-columns p {
+    margin: 0 0 5px 0;
+    break-inside: avoid-column;
+    page-break-inside: avoid;
+  }
+  .sow-tc-heading-inline {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 7.8pt;
+    color: #001F5F;
+    margin: 8px 0 3px 0;
+    display: block;
+    break-after: avoid-column;
+    page-break-after: avoid;
+  }
+  .sow-tc-columns .bold { font-weight: 700; }<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPL SOW Generator</title>
+<style>
+  /* ── Google Fonts ── */
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;600&family=Poppins:wght@300;400;600;700&display=swap');
+
+  /* ══════════════════════════════════════
+     RESET & BASE
+  ══════════════════════════════════════ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #1F3763;
+    --teal:   #00A499;
+    --gold:   #C9A84C;
+    --light:  #F4F7FB;
+    --border: #D0D8E8;
+    --text:   #1A1A2E;
+    --muted:  #6B7A99;
+    --white:  #FFFFFF;
+    --red:    #C0392B;
+    --green:  #1A7A5E;
+  }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: var(--light);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ══════════════════════════════════════
+     WIZARD SHELL
+  ══════════════════════════════════════ */
+  #wizard {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top bar */
+  .wiz-topbar {
+    background: var(--navy);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .wiz-topbar .brand {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--white);
+    letter-spacing: 0.04em;
+  }
+  .wiz-topbar .brand span { color: var(--teal); }
+  .wiz-topbar .subtitle {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Step indicator */
+  .step-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    gap: 0;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px 16px 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .step-item.active {
+    color: var(--navy);
+    border-bottom-color: var(--teal);
+  }
+  .step-item.done { color: var(--teal); }
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step-item.active .step-num { background: var(--teal); color: var(--white); }
+  .step-item.done .step-num  { background: var(--teal); color: var(--white); }
+
+  /* Main content */
+  .wiz-content {
+    flex: 1;
+    padding: 40px 32px;
+    max-width: 860px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  /* Preview step — let the SOW doc breathe to its full width */
+  #step-preview .wiz-content,
+  #step-preview {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .wiz-footer {
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+  }
+
+  /* ══════════════════════════════════════
+     FORM ELEMENTS
+  ══════════════════════════════════════ */
+  .section-heading {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+  }
+  .form-grid.full { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.span2 { grid-column: span 2; }
+
+  label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--navy);
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="date"],
+  textarea,
+  select {
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: #139DD8;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+
+  /* ══════════════════════════════════════
+     SERVICE LINE TOGGLES
+  ══════════════════════════════════════ */
+  .service-card {
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+  .service-card:hover { border-color: #139DD8; }
+  .service-card.selected {
+    border-color: #139DD8;
+    background: #F0FAFA;
+    box-shadow: 0 0 0 3px rgba(0,164,153,0.12);
+  }
+  .toggle-btn {
+    width: 44px; height: 24px;
+    border-radius: 12px;
+    background: var(--border);
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    margin-top: 2px;
+  }
+  .toggle-btn::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--white);
+    top: 3px; left: 3px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .service-card.selected .toggle-btn { background: var(--teal); }
+  .service-card.selected .toggle-btn::after { left: 23px; }
+
+  .service-card-body h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 3px;
+  }
+  .service-card-body p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ══════════════════════════════════════
+     FEE TABLE
+  ══════════════════════════════════════ */
+  .fee-section {
+    margin-bottom: 28px;
+    background: var(--white);
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+  }
+  .fee-section-header {
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 16px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .fee-table { width: 100%; border-collapse: collapse; }
+  .fee-table th {
+    background: #DEEAF6;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--navy);
+    border-bottom: 1px solid var(--border);
+  }
+  .fee-table th.right { text-align: right; }
+  .fee-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  .fee-table tr:last-child td { border-bottom: none; }
+  .fee-table td.right { text-align: right; }
+  .fee-table td input[type="number"] {
+    width: 90px;
+    padding: 5px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    font-size: 13px;
+    text-align: right;
+  }
+  .fee-table td input[type="number"]:focus { border-color: #139DD8; outline: none; }
+  .subtotal-row td {
+    background: #DEEAF6;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .total-row td {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .note-row td {
+    background: #FFF8E8;
+    color: var(--muted);
+    font-size: 11px;
+    font-style: italic;
+    border-top: 1px dashed var(--border);
+  }
+
+  /* ══════════════════════════════════════
+     BUTTONS
+  ══════════════════════════════════════ */
+  .btn {
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--teal);
+    color: var(--white);
+  }
+  .btn-primary:hover { background: #008A80; }
+  .btn-secondary {
+    background: var(--white);
+    color: var(--navy);
+    border: 2px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--navy); }
+  .btn-navy {
+    background: var(--navy);
+    color: var(--white);
+  }
+  .btn-navy:hover { background: #162A50; }
+
+  /* ══════════════════════════════════════
+     DIVIDERS
+  ══════════════════════════════════════ */
+  .divider {
+    height: 2px;
+    background: linear-gradient(to right, var(--teal), transparent);
+    border: none;
+    margin: 28px 0;
+  }
+
+  /* ══════════════════════════════════════
+     PREVIEW / SOW OUTPUT
+  ══════════════════════════════════════ */
+  #preview-area { display: none; }
+
+  /* ══════════════════════════════════════
+     SOW DOCUMENT STYLES
+  ══════════════════════════════════════ */
+  .sow-doc {
+    background: white;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 10.2pt;
+    line-height: 1.55;
+    color: #1A1A1A;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    -webkit-hyphens: none;
+    hyphens: none;
+  }
+
+  .sow-cover {
+    background: white;
+  }
+  .sow-cover-top-img {
+    width: 100%;
+    display: block;
+  }
+  .sow-cover-content {
+    padding: 20px 60px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+  }
+  /* hide old logo/title — now in the image */
+  .sow-logo, .sow-doc-title { display: none; }
+  .sow-cover-tagline {
+    display: none;
+  }
+  .sow-logo {
+    margin-bottom: 8px;
+  }
+  .sow-logo img {
+    height: 48px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  .sow-doc-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11pt;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #139DD8;
+    margin-bottom: 28px;
+  }
+
+  .sow-parties-table {
+    width: 60%;
+    border-collapse: collapse;
+    margin: 0 auto 20px auto;
+    font-family: 'Poppins', sans-serif;
+    font-size: 9pt;
+    table-layout: fixed;
+  }
+  .sow-parties-table col.col-for { width: 50%; }
+  .sow-parties-table col.col-by  { width: 50%; }
+  .sow-parties-table th {
+    font-weight: 700;
+    font-size: 8pt;
+    letter-spacing: 0.06em;
+    color: #001F5F;
+    text-transform: uppercase;
+    padding: 0 8px 6px;
+  }
+  .sow-parties-table th.col-for { text-align: right; }
+  .sow-parties-table th.col-by  { text-align: left;  }
+  .sow-parties-table td {
+    padding: 2px 8px;
+    vertical-align: top;
+    line-height: 1.45;
+    font-size: 9pt;
+  }
+  .sow-parties-table td.col-for { text-align: right; }
+  .sow-parties-table td.col-by  { text-align: left;  }
+
+  .sow-date-line {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 9pt;
+    color: #001F5F;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  .sow-body {
+    padding: 28px 50px 40px;
+  }
+
+  .sow-intro {
+    font-family: 'Poppins', sans-serif;
+    text-align: justify;
+    margin-bottom: 20px;
+    font-size: 10.2pt;
+  }
+  /* Justify all body text globally */
+  .sow-body p,
+  .sow-body li,
+  .sow-ul li,
+  .sow-responsibility-ul li,
+  .sow-responsibility-prose p,
+  .sow-tc-columns p,
+  .sow-tc-body p,
+  .sow-tc-body li,
+  .sow-footnote {
+    text-align: justify;
+  }
+
+  .sow-rule {
+    width: 60%;
+    border: none;
+    border-top: 2px solid #001F5F;
+    margin: 22px auto;
+  }
+  .sow-mini-rule {
+    width: 55%;
+    border: none;
+    border-top: 1px solid #001F5F;
+    margin: 16px auto 18px;
+  }
+  .sow-footnote {
+    font-family: 'Poppins', sans-serif;
+    font-size: 7.8pt;
+    color: #444;
+    margin-top: 20px;
+    padding-top: 8px;
+    border-top: 1px solid #ccc;
+    line-height: 1.5;
+  }
+
+  .sow-section-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 13.8pt;
+    color: #001F5F;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 24px 0 16px;
+  }
+
+  .sow-phase-heading {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 13.2pt;
+    color: #139DD8;
+    margin: 18px 0 8px;
+  }
+
+  .sow-phase-heading .phase-label {
+    font-weight: 400;
+    color: #001F5F;
+  }
+
+  .sow-ul {
+    padding-left: 20px;
+    margin-bottom: 10px;
+  }
+  .sow-ul li {
+    margin-bottom: 5px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 10.2pt;
+  }
+  .sow-ul.sub {
+    list-style-type: circle;
+    padding-left: 36px;
+    margin-top: 4px;
+  }
+
+  /* Pricing tables inside SOW */
+  .sow-pricing-block { margin: 20px 0; }
+  .sow-pricing-block-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 10.8pt;
+    color: #139DD8;
+    border-bottom: 2px solid #139DD8;
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .sow-fee-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4px;
+    font-size: 9pt;
+  }
+  .sow-fee-table .tbl-header th {
+    background: #001F5F;
+    color: white;
+    padding: 7px 10px;
+    font-weight: 700;
+    font-size: 7.8pt;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .sow-fee-table .tbl-header th:last-child { text-align: right; }
+  .sow-fee-table .tbl-subheader td {
+    background: #DEEAF6;
+    font-weight: 700;
+    color: #001F5F;
+    padding: 5px 10px;
+    font-size: 7.8pt;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .sow-fee-table tbody tr td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #C5D5E8;
+    font-family: 'Poppins', sans-serif;
+    font-size: 9pt;
+  }
+  .sow-fee-table tbody tr:last-child td { border-bottom: none; }
+  .sow-fee-table .rate-cell { text-align: right; font-weight: 600; }
+  .sow-fee-table .total-row td {
+    background: #001F5F;
+    color: white;
+    font-weight: 700;
+    font-size: 9pt;
+    padding: 7px 10px;
+  }
+  .sow-fee-table .total-row td:last-child { text-align: right; }
+  .sow-fee-table .subtotal-row td {
+    background: #DEEAF6;
+    font-weight: 700;
+    color: #001F5F;
+    padding: 5px 10px;
+  }
+  .sow-fee-table .subtotal-row td:last-child { text-align: right; }
+  .sow-fee-table .note-cell td {
+    background: #FFFBF0;
+    color: #666;
+    font-style: italic;
+    font-size: 8pt;
+    padding: 5px 10px;
+    border-top: 1px dashed #DDD;
+  }
+
+  .sow-payment-terms {
+    margin-top: 16px;
+    font-size: 9pt;
+  }
+  .sow-payment-terms p { margin-bottom: 6px; }
+  .sow-payment-terms ul {
+    padding-left: 20px;
+    margin-bottom: 6px;
+  }
+
+  .sow-tc-heading {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 9pt;
+    column-span: all;
+    color: #001F5F;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 18px 0 8px;
+    border-bottom: 1px solid #DEEAF6;
+    padding-bottom: 4px;
+  }
+  .sow-tc-body {
+    font-family: 'Poppins', sans-serif;
+    font-size: 9pt;
+    line-height: 1.6;
+    color: #2A2A2A;
+  }
+  .sow-tc-body p { margin-bottom: 6px; }
+  .sow-tc-body ul li { margin-bottom: 4px; }
+  .sow-tc-columns {
+    font-family: 'Poppins', sans-serif;
+    font-size: 8pt;
+    line-height: 1.55;
+    color: #2A2A2A;
+    width: 100%;
+  }
+  /* Two-column table layout for html2pdf compatibility */
+  .sow-tc-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: none;
+  }
+  .sow-tc-col-left {
+    width: 49%;
+    vertical-align: top;
+    padding-right: 14px;
+    border-right: 1px solid #DEEAF6;
+    font-family: 'Poppins', sans-serif;
+    font-size: 8pt;
+    line-height: 1.55;
+    color: #2A2A2A;
+    text-align: justify;
+  }
+  .sow-tc-col-right {
+    width: 49%;
+    vertical-align: top;
+    padding-left: 14px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 8pt;
+    line-height: 1.55;
+    color: #2A2A2A;
+    text-align: justify;
+  }
+  .sow-tc-columns p {
+    margin-bottom: 5px;
+    margin-top: 0;
+  }
+  .sow-tc-columns .bold { font-weight: 700; }
+  .sow-tc-heading-inline {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 8pt;
+    color: #001F5F;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 6px 0 2px 0;
+    display: block;
+  }
+  .sow-tc-page-break {
+    page-break-before: always;
+    margin-top: 0;
+  }
+
+  /* Responsibility outlines */
+  .sow-responsibility-block {
+    margin: 20px 0 28px;
+  }
+  .sow-responsibility-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 10.5pt;
+    color: #139DD8;
+    border-bottom: 2px solid #139DD8;
+    padding-bottom: 5px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .sow-responsibility-cols {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .sow-responsibility-col {
+    display: table-cell;
+    width: 50%;
+    vertical-align: top;
+    padding-right: 12px;
+  }
+  .sow-responsibility-col + .sow-responsibility-col {
+    padding-right: 0;
+    padding-left: 12px;
+    border-left: 1px solid #DEEAF6;
+  }
+  .sow-responsibility-col {
+    font-size: 8.5pt;
+  }
+  .sow-responsibility-section-label {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 8.5pt;
+    color: #001F5F;
+    margin: 10px 0 5px;
+  }
+  .sow-responsibility-ul {
+    padding-left: 16px;
+    margin: 0 0 8px;
+  }
+  .sow-responsibility-ul li {
+    font-family: 'Poppins', sans-serif;
+    font-size: 8.5pt;
+    line-height: 1.5;
+    margin-bottom: 3px;
+    color: #2A2A2A;
+  }
+  .sow-responsibility-prose {
+    font-family: 'Poppins', sans-serif;
+    font-size: 8.5pt;
+    line-height: 1.6;
+    color: #2A2A2A;
+  }
+  .sow-responsibility-prose p {
+    margin-bottom: 8px;
+    text-align: justify;
+  }
+
+  .sow-billing-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 9pt;
+  }
+  .sow-billing-table th {
+    background: #001F5F;
+    color: white;
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    colspan: 2;
+  }
+  .sow-billing-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #C5D5E8;
+    vertical-align: top;
+  }
+  .sow-billing-table .label-cell {
+    color: #139DD8;
+    font-weight: 600;
+    width: 45%;
+  }
+  .sow-billing-table .section-header td {
+    background: #001F5F;
+    color: white;
+    font-weight: 700;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .sow-sig-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 24px;
+    padding-top: 16px;
+  }
+  .sig-col h4 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 9pt;
+    color: #001F5F;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+  .sig-line {
+    border-bottom: 1px solid #001F5F;
+    margin: 18px 0 4px;
+    min-height: 22px;
+  }
+  .sig-label {
+    font-size: 8pt;
+    color: #666;
+    margin-bottom: 10px;
+  }
+
+  /* ══════════════════════════════════════
+     PRINT
+  ══════════════════════════════════════ */
+  @media print {
+    /* Hide everything except the SOW document */
+    body > #wizard { display: none !important; }
+    #print-frame { display: block !important; }
+  }
+  #print-frame { display: none; }
+
+  /* ══════════════════════════════════════
+     MISC
+  ══════════════════════════════════════ */
+  .info-box {
+    background: #EBF7F6;
+    border-left: 4px solid var(--teal);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    font-size: 12px;
+    color: #1A5C57;
+    margin-bottom: 20px;
+  }
+  .preview-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+  .step-page { display: none; }
+  .step-page.active { display: block; }
+  .phase-number-note {
+    font-size: 11px;
+    color: var(--teal);
+    font-style: italic;
+    margin-top: 6px;
+  }
+  .grand-total-box {
+    background: var(--navy);
+    color: white;
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+  }
+  .grand-total-box .label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .grand-total-box .amount {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--teal);
+  }
+  .notice {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 8px;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     WIZARD
+═══════════════════════════════════════════════════ -->
+<div id="wizard">
+
+  <!-- Top bar -->
+  <div class="wiz-topbar">
+    <div>
+      <div class="brand">TRANS<span>PERFECT</span> LEGAL</div>
+    </div>
+    <div class="subtitle">SOW Generator</div>
+  </div>
+
+  <!-- Step indicators (rendered dynamically by JS) -->
+  <div class="step-bar" id="step-bar"></div>
+
+  <!-- Content -->
+  <div class="wiz-content">
+
+    <!-- ── STEP 1: Client Details ── -->
+    <div class="step-page active" id="step1">
+      <div class="section-heading">Client &amp; Matter Details</div>
+      <div class="section-sub">This information will populate the cover page and body of the agreement.</div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Client Contact Name</label>
+          <input type="text" id="clientContactName" placeholder="e.g. Jane Smith">
+        </div>
+        <div class="form-group">
+          <label>Client Firm</label>
+          <input type="text" id="clientFirm" placeholder="e.g. Freshfields LLP">
+        </div>
+        <div class="form-group span2">
+          <label>Client Legal Entity</label>
+          <input type="text" id="clientEntity" placeholder="e.g. Freshfields Bruckhaus Deringer LLP">
+        </div>
+        <div class="form-group">
+          <label>Client Address Line 1</label>
+          <input type="text" id="clientAddr1" placeholder="e.g. 65 Fleet Street">
+        </div>
+        <div class="form-group">
+          <label>Client City &amp; Post Code</label>
+          <input type="text" id="clientAddr2" placeholder="e.g. London, EC4Y 1HS">
+        </div>
+        <div class="form-group span2">
+          <label>Client Email</label>
+          <input type="email" id="clientEmail" placeholder="e.g. j.smith@freshfields.com">
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>TPL Account Manager</label>
+          <input type="text" id="tplAM" placeholder="e.g. Al-Karim Makhani">
+        </div>
+        <div class="form-group">
+          <label>TPL Title</label>
+          <input type="text" id="tplTitle" placeholder="e.g. Vice President">
+        </div>
+        <div class="form-group">
+          <label>TPL Address Line 1</label>
+          <input type="text" id="tplAddr1" value="Aldgate House, 33 Aldgate High Street">
+        </div>
+        <div class="form-group">
+          <label>TPL City &amp; Post Code</label>
+          <input type="text" id="tplAddr2" value="London, EC3N 1AH">
+        </div>
+        <div class="form-group span2">
+          <label>TPL Email</label>
+          <input type="email" id="tplEmail" placeholder="e.g. akm@transperfect.com">
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>End-Client</label>
+          <input type="text" id="endClient" placeholder="e.g. Acme Corp plc">
+        </div>
+        <div class="form-group">
+          <label>Matter / Case Name</label>
+          <input type="text" id="matter" placeholder="e.g. Acme Corp v Smith (No. 2)">
+        </div>
+        <div class="form-group">
+          <label>Agreement Date</label>
+          <input type="date" id="agreementDate">
+        </div>
+        <div class="form-group">
+          <label>Currency</label>
+          <select id="currency">
+            <option value="£">GBP (£)</option>
+            <option value="$">USD ($)</option>
+            <option value="€">EUR (€)</option>
+          </select>
+        </div>
+        <div class="form-group span2">
+          <label>Pricing Note (choose one)</label>
+          <select id="pricingNote">
+            <option value="estimates">Cost projections are based on information currently available and/or assumptions and are estimates only.</option>
+            <option value="unit_rates">At this stage, we do not know enough about the likely data sizes or applicable date ranges to meaningfully provide a quote for the entire project so we are sharing applicable unit rates.</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: What to Include? ── -->
+    <div class="step-page" id="step-inclusions">
+      <div class="section-heading">What to Include in the SOW?</div>
+      <div class="section-sub">Choose which pricing sections to include. These determine the steps in this wizard.</div>
+
+      <div class="service-card" id="card-ratesheet" onclick="toggleInclusion('ratesheet')">
+        <div class="toggle-btn" id="toggle-ratesheet"></div>
+        <div class="service-card-body">
+          <h3>Rate Sheet</h3>
+          <p>Include the full standard rate card as a schedule to the agreement. Ideal for matters where the scope is not yet fully defined and you want to give the client visibility of all applicable rates.</p>
+        </div>
+      </div>
+
+      <div class="service-card" id="card-specificcosts" onclick="toggleInclusion('specificcosts')">
+        <div class="toggle-btn" id="toggle-specificcosts"></div>
+        <div class="service-card-body">
+          <h3>Specific Cost Breakdown</h3>
+          <p>Include a detailed cost estimate for specific service lines, with estimated units and a running total. Best for matters with known scope and data volumes.</p>
+        </div>
+      </div>
+
+      <div id="flow-preview-box" style="display:none;margin-top:20px;padding:14px 18px;background:#EBF7F6;border-left:4px solid var(--teal);border-radius:0 8px 8px 0;font-size:13px;color:#1A5C57;">
+        <strong>Wizard flow:</strong> <span id="flow-preview-text"></span>
+      </div>
+    </div>
+
+    <!-- ── Rate Sheet Review ── -->
+    <div class="step-page" id="step-ratesheet">
+      <div class="section-heading">Review Rate Schedule</div>
+      <div class="section-sub">These rates will appear in the SOW. Click any rate to edit. Floor rates (shown in red) are for your guidance only — they will <strong>never</strong> appear in the output document.</div>
+      <div id="rate-sheet-table-container"></div>
+    </div>
+
+    <!-- ── Service Line Selection ── -->
+    <div class="step-page" id="step-services">
+      <div class="section-heading">Select Service Lines</div>
+      <div class="section-sub">Select the services to include in the cost breakdown. Phase numbers will be assigned automatically.</div>
+      <div class="info-box">Toggle on the services that apply. Unselected services will be excluded from the cost breakdown.</div>
+
+      <div class="service-card" id="card-forensic" onclick="toggleService('forensic')">
+        <div class="toggle-btn" id="toggle-forensic"></div>
+        <div class="service-card-body">
+          <h3>Forensic Data Collection</h3>
+          <p>Digital forensic services including device acquisitions, cloud collections, M365/Google Workspace, social media, onsite and remote collections, and forensic consulting.</p>
+        </div>
+      </div>
+
+      <div class="service-card" id="card-processing" onclick="toggleService('processing')">
+        <div class="toggle-btn" id="toggle-processing"></div>
+        <div class="service-card-body">
+          <h3>Data Processing &amp; Early Case Assessment</h3>
+          <p>Processing collected data in Digital Reef using standard culling techniques. ECA analytics including custodian analysis, clustering, threading, and sentiment analysis.</p>
+        </div>
+      </div>
+
+      <div class="service-card" id="card-hosting" onclick="toggleService('hosting')">
+        <div class="toggle-btn" id="toggle-hosting"></div>
+        <div class="service-card-body">
+          <h3>Data Hosting, Analytics &amp; Review Support</h3>
+          <p>Relativity hosting, Brainspace analytics, TAR/predictive coding, project management and consulting support through the review process. Productions and data disposition.</p>
+        </div>
+      </div>
+
+      <div class="service-card" id="card-genai" onclick="toggleService('genai')">
+        <div class="toggle-btn" id="toggle-genai"></div>
+        <div class="service-card-body">
+          <h3>GenAI</h3>
+          <p>Cicero, eDiscoveryAI, Early Case Intelligence (ECI) and GenAI Consulting. Rates are per document or per hour. Floor rates apply.</p>
+        </div>
+      </div>
+
+      <div class="service-card" id="card-review" onclick="toggleService('review')">
+        <div class="toggle-btn" id="toggle-review"></div>
+        <div class="service-card-body">
+          <h3>Managed Review</h3>
+          <p>UK-based or offshore document review. Contract reviewers, review managers, and review project management. English language and foreign language review.</p>
+        </div>
+      </div>
+
+      <div id="phase-preview" style="margin-top:16px; padding:12px 16px; background:#F4F7FB; border-radius:8px; font-size:12px; color:#001F5F; display:none;">
+        <strong>Phase order in the agreement:</strong> <span id="phase-order-text"></span>
+      </div>
+    </div>
+
+    <!-- ── Specific Prices ── -->
+    <div class="step-page" id="step-specific-prices">
+      <div class="section-heading">Specific Cost Breakdown</div>
+      <div class="section-sub">Enter estimated units for each line item. Rates are pre-loaded and editable. Floor rates are shown in red for guidance only — they will not appear in the output.</div>
+
+      <div id="fee-tables-container"></div>
+
+      <div class="grand-total-box" id="grand-total-box">
+        <div class="label">Estimated Total</div>
+        <div class="amount" id="grand-total-display">£0</div>
+      </div>
+      <div class="notice">All pricing is exclusive of VAT. Subject to a £250 minimum per technology services project.</div>
+    </div>
+
+    <!-- ── Details & Definitions Exhibit ── -->
+    <div class="step-page" id="step-exhibit">
+      <div class="section-heading">Details &amp; Definitions Exhibit</div>
+      <div class="section-sub">Optionally append Adam's exhibit (Details &amp; Definitions) to the agreement. Toggle to include and preview the full content below.</div>
+
+      <div class="service-card" id="card-exhibit" onclick="toggleExhibit()" style="margin-bottom:24px;">
+        <div class="toggle-btn" id="toggle-exhibit"></div>
+        <div class="service-card-body">
+          <h3>Include Details &amp; Definitions Exhibit</h3>
+          <p>Appends a four-section exhibit covering Forensic Service Case Parameters, eDiscovery Definitions, Managed Review, and Case Closure Options.</p>
+        </div>
+      </div>
+
+      <div id="exhibit-preview" style="display:none;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;">
+        <div style="background:var(--navy);color:white;padding:10px 16px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;">
+          Exhibit Preview — Details &amp; Definitions
+        </div>
+        <div style="padding:20px 24px;font-size:12px;line-height:1.7;max-height:600px;overflow-y:auto;">
+
+          <h4 style="color:#001F5F;font-size:13px;margin:0 0 8px;">A. Forensic Service Case Parameters</h4>
+          <ul style="padding-left:18px;margin:0 0 16px;">
+            <li>All forensic collections and analysis services are provided by qualified forensic practitioners using industry-standard tools and methods.</li>
+            <li>Standard acquisitions include logical and physical device acquisitions, cloud collections, and email archive collections.</li>
+            <li>All collections are documented with appropriate chain-of-custody records.</li>
+            <li>Forensic consulting includes project oversight, client consultation, and review of forensic methodology.</li>
+            <li>Senior forensic consulting is required for remediation work, expert testimony, affidavit preparation, and advanced analytics.</li>
+            <li>After-hours and weekend rates apply to services scheduled outside of standard business hours (09:00–18:00 Mon–Fri, excluding UK public holidays).</li>
+          </ul>
+
+          <h4 style="color:#001F5F;font-size:13px;margin:0 0 8px;">B. eDiscovery Definitions</h4>
+          <ul style="padding-left:18px;margin:0 0 16px;">
+            <li><strong>Native Review:</strong> Review of documents in their original file format.</li>
+            <li><strong>ECA (Early Case Assessment):</strong> Evaluating a collection before full review to understand scope and relevance.</li>
+            <li><strong>Processing:</strong> Converting raw data into reviewable format, including de-duplication, deNIST filtering, and indexing.</li>
+            <li><strong>Hosting:</strong> Providing a secure web-based review environment (Relativity or similar).</li>
+            <li><strong>TAR (Technology Assisted Review):</strong> Machine learning algorithms assisting in identifying relevant documents.</li>
+            <li><strong>Brainspace:</strong> Conceptual analytics and TAR platform integrated with Relativity.</li>
+            <li><strong>Productions:</strong> Disclosure of relevant documents to opposing parties in agreed format.</li>
+            <li><strong>Data Disposition:</strong> Secure deletion or return of client data at matter conclusion.</li>
+          </ul>
+
+          <h4 style="color:#001F5F;font-size:13px;margin:0 0 8px;">C. Managed Review</h4>
+          <ul style="padding-left:18px;margin:0 0 16px;">
+            <li>All managed reviewers are legally qualified or have equivalent experience and are trained on TransPerfect Legal's quality management protocols.</li>
+            <li>Review Managers are responsible for day-to-day review management, issue escalation, and quality control.</li>
+            <li>Project Managers provide strategic oversight, coordinating with counsel and ensuring timelines are met.</li>
+            <li>All review is conducted in accordance with an agreed review protocol, prepared in consultation with the instructing law firm.</li>
+            <li>TransPerfect Legal maintains a continuous quality assurance programme with a minimum 10% QC rate applied to all reviewer decisions.</li>
+            <li>Daily reporting on review progress is provided as standard.</li>
+          </ul>
+
+          <h4 style="color:#001F5F;font-size:13px;margin:0 0 8px;">D. Case Closure Options</h4>
+          <ul style="padding-left:18px;margin:0 0 16px;">
+            <li>At matter conclusion, TransPerfect Legal will work with Client to agree appropriate data disposition procedures.</li>
+            <li>Options include: secure deletion; return of data on encrypted media; transfer to a third-party platform.</li>
+            <li>All data disposition is documented and a certificate of destruction/transfer provided upon request.</li>
+            <li>Archive storage is available at reduced rates for concluded matters where data must be retained for a defined period.</li>
+            <li>Database disposal fees apply for deletion of Relativity databases (flat fee under 1TB; per-GB over 1TB).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Preview & Export ── -->
+    <div class="step-page" id="step-preview">
+      <div class="section-heading">Preview &amp; Export</div>
+      <div class="section-sub">Review the generated agreement below. Use <strong>Print / Save as PDF</strong> for a final PDF, or <strong>Open Editable Version</strong> to edit the document directly in your browser.</div>
+      <div class="preview-controls">
+        <button class="btn btn-primary" onclick="printSOW()">🖨 Print / Save as PDF</button>
+        <button class="btn btn-secondary" onclick="openEditable()">✏️ Open Editable Version</button>
+      </div>
+      <div id="sow-preview-container" style="margin:0 auto;max-width:780px;"></div>
+    </div>
+
+  </div><!-- /wiz-content -->
+
+  <!-- Footer navigation -->
+  <div class="wiz-footer">
+    <button class="btn btn-secondary" id="btn-back" onclick="navigate(-1)" style="visibility:hidden">← Back</button>
+    <span id="step-label" style="font-size:12px;color:var(--muted);font-weight:600;">Step 1 of 2</span>
+    <button class="btn btn-primary" id="btn-next" onclick="navigate(1)">Next →</button>
+  </div>
+
+</div><!-- /wizard -->
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════ -->
+<script>
+/* ══════════════════════════════════════
+   WIZARD STATE
+══════════════════════════════════════ */
+const services = { forensic: false, processing: false, hosting: false, genai: false, review: false };
+const inclusions = { ratesheet: false, specificcosts: false };
+let includeExhibit = false;
+
+/* Flow definitions */
+const FLOW_STEPS = {
+  A: ['step1', 'step-inclusions', 'step-ratesheet', 'step-services', 'step-specific-prices', 'step-exhibit', 'step-preview'],
+  B: ['step1', 'step-inclusions', 'step-ratesheet', 'step-exhibit', 'step-preview'],
+  C: ['step1', 'step-inclusions', 'step-services', 'step-specific-prices', 'step-exhibit', 'step-preview'],
+  start: ['step1', 'step-inclusions'],
+};
+const STEP_LABELS = {
+  'step1': 'Client Details',
+  'step-inclusions': 'What to Include',
+  'step-ratesheet': 'Rate Schedule',
+  'step-services': 'Service Lines',
+  'step-specific-prices': 'Specific Prices',
+  'step-exhibit': 'Details & Definitions',
+  'step-preview': 'Preview & Export',
+};
+
+let currentFlow = 'start';
+let currentStepIndex = 0;
+
+function getFlow() {
+  const rs = inclusions.ratesheet, sc = inclusions.specificcosts;
+  if (rs && sc) return 'A';
+  if (rs && !sc) return 'B';
+  if (!rs && sc) return 'C';
+  return 'start';
+}
+function getSteps() { return FLOW_STEPS[currentFlow]; }
+function getCurrentStepId() { return getSteps()[currentStepIndex]; }
+
+/* ── Render step bar ── */
+function renderStepBar() {
+  const bar = document.getElementById('step-bar');
+  const steps = getSteps();
+  bar.innerHTML = steps.map((id, i) => {
+    let cls = 'step-item';
+    if (i === currentStepIndex) cls += ' active';
+    else if (i < currentStepIndex) cls += ' done';
+    return `<div class="${cls}" id="si-${id}">
+      <div class="step-num">${i + 1}</div>
+      ${STEP_LABELS[id] || id}
+    </div>`;
+  }).join('');
+}
+
+/* ── Rate card data ── */
+/* rates are defaults; user can click to edit inline */
+const rateCard = {
+  forensic: {
+    title: 'Forensic Data Collection',
+    note: 'Digital Forensic services are included as a resource for ad-hoc collections and consulting, ensuring support is available when needed.',
+    groups: [
+      {
+        label: 'Hourly Rates – Business Hours',
+        rows: [
+          { id:'f1', desc:'Standard Forensic Acquisitions and Services', unit:'Hour', rate:300 },
+          { id:'f2', desc:'Forensic Consulting & Analysis',              unit:'Hour', rate:350 },
+        ]
+      },
+      {
+        label: 'Hourly Rates – After Hours / Weekends',
+        rows: [
+          { id:'f4', desc:'Standard Forensic Acquisitions',        unit:'Hour', rate:450 },
+          { id:'f5', desc:'Forensic Consulting & Analysis',        unit:'Hour', rate:524 },
+        ]
+      },
+      {
+        label: 'Technology Costs',
+        rows: [
+          { id:'f7', desc:'Collection Media – Hard Drive 1TB',                              unit:'Per 2 Drive Set', rate:175 },
+          { id:'f8', desc:'Remote Collection Kit – Domestic Rental (Computer/Mobile)',      unit:'Each',            rate:75  },
+          { id:'f9', desc:'Remote Collection Kit – International Rental (Computer/Mobile)', unit:'Each',            rate:100 },
+        ]
+      }
+    ]
+  },
+  processing: {
+    title: 'Data Processing',
+    groups: [
+      {
+        label: 'ECA Digital Reef – Ingestion',
+        rows: [
+          { id:'p1', desc:'ECA Digital Reef – Ingestion', unit:'GB', rate:25 },
+        ]
+      },
+      {
+        label: 'Data Export for Native Review',
+        rows: [
+          { id:'p2', desc:'Data Export for Native Review', unit:'GB', rate:70 },
+        ]
+      }
+    ]
+  },
+  hosting: {
+    title: 'Data Hosting, Analytics & Review Support',
+    groups: [
+      {
+        label: 'Active Hosting – Relativity Server',
+        rows: [
+          { id:'h1', desc:'Active Hosting – Relativity Server', unit:'GB',   rate:10 },
+          { id:'h2', desc:'Monthly User Fee',                   unit:'Each', rate:60 },
+          { id:'h3', desc:'ECA Hosting (Digital Reef)',          unit:'GB',   rate:2  },
+          { id:'h4', desc:'Archive Storage',                    unit:'GB',   rate:4  },
+        ]
+      },
+      {
+        label: 'Active Hosting – Reef Review',
+        rows: [
+          { id:'h5', desc:'Active Hosting – Reef Review', unit:'GB', rate:8 },
+          { id:'h6', desc:'Archive Storage (Reef Review)', unit:'GB', rate:2 },
+        ]
+      },
+      {
+        label: 'Analytics, TAR and AI',
+        rows: [
+          { id:'h7',  desc:'Brainspace and Relativity', unit:'GB',      rate:30,   brainspace:true },
+          { id:'h8',  desc:'Blackout – Setup',          unit:'Setup',   rate:250  },
+          { id:'h9',  desc:'Blackout – Per Document',   unit:'Per Doc', rate:2    },
+        ]
+      },
+      {
+        label: 'Case Management & Support',
+        rows: [
+          { id:'h10', desc:'Project Management',  unit:'Hour', rate:225 },
+          { id:'h11', desc:'Consulting',           unit:'Hour', rate:350 },
+        ]
+      },
+      {
+        label: 'Productions',
+        rows: [
+          { id:'h13', desc:'Imaging for Productions', unit:'Page', rate:0.03 },
+        ]
+      },
+      {
+        label: 'Data Disposition',
+        rows: [
+          { id:'h14', desc:'Database Disposal – Under 1TB', unit:'Per Database', rate:750 },
+          { id:'h15', desc:'Database Disposal – Over 1TB',  unit:'Per GB',       rate:1   },
+        ]
+      }
+    ]
+  },
+  genai: {
+    title: 'GenAI',
+    groups: [
+      {
+        label: '',
+        rows: [
+          { id:'g1', desc:'GenAI (Cicero)', descNote:'Hosting provided for duration of active project.', unit:'Per Document', rate:0.60, floor:0.45 },
+          { id:'g2', desc:'GenAI (eDiscoveryAI)',  unit:'Per Document', rate:0.25, floor:0.20 },
+          { id:'g3', desc:'GenAI (ECI) – Core', descNote:'Case Elements and Casebot are optional add-on functions on top of Core.', unit:'Per Document', rate:0.04, floor:0.04 },
+          { id:'g4', desc:'GenAI (ECI) – + Case Elements', unit:'Per Document', rate:0.04, floor:0.04 },
+          { id:'g5', desc:'GenAI (ECI) – + Casebot Setup', unit:'Per Document', rate:0.04, floor:0.04, rateNote:'+ £0.04 quarterly hosting' },
+          { id:'g6', desc:'GenAI Consulting', unit:'Hour', rate:450, floor:450 },
+        ]
+      }
+    ]
+  },
+  review: {
+    title: 'Managed Review',
+    groups: [
+      {
+        label: 'English Language Review – UK Based',
+        rows: [
+          { id:'r1', desc:'Contract Reviewer',         unit:'Hour', rate:55  },
+          { id:'r2', desc:'Review Manager',            unit:'Hour', rate:85  },
+          { id:'r3', desc:'Review Project Management', unit:'Hour', rate:150 },
+        ]
+      },
+      {
+        label: 'Offshore Review Centre – India Based',
+        rows: [
+          { id:'r4', desc:'Contract Reviewer',         unit:'Hour', rate:25 },
+          { id:'r5', desc:'Review Manager',            unit:'Hour', rate:32 },
+          { id:'r6', desc:'Review Project Management', unit:'Hour', rate:85 },
+        ]
+      }
+    ]
+  }
+};
+
+/* ── Inclusion toggles (step 2) ── */
+function toggleInclusion(key) {
+  inclusions[key] = !inclusions[key];
+  const card = document.getElementById('card-' + key);
+  if (inclusions[key]) card.classList.add('selected');
+  else card.classList.remove('selected');
+
+  const flow = getFlow();
+  const box = document.getElementById('flow-preview-box');
+  const txt = document.getElementById('flow-preview-text');
+  if (flow === 'start') { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const labels = { A: 'Rate Schedule → Service Lines → Specific Prices → Details & Definitions → Preview', B: 'Rate Schedule → Details & Definitions → Preview', C: 'Service Lines → Specific Prices → Details & Definitions → Preview' };
+  txt.textContent = labels[flow] || '';
+}
+
+/* ── Exhibit toggle ── */
+function toggleExhibit() {
+  includeExhibit = !includeExhibit;
+  const card = document.getElementById('card-exhibit');
+  if (includeExhibit) card.classList.add('selected');
+  else card.classList.remove('selected');
+  document.getElementById('exhibit-preview').style.display = includeExhibit ? 'block' : 'none';
+}
+
+/* ── Service toggle ── */
+function toggleService(key) {
+  services[key] = !services[key];
+  const card = document.getElementById('card-' + key);
+  if (services[key]) card.classList.add('selected');
+  else card.classList.remove('selected');
+  updatePhasePreview();
+}
+
+function getSelectedServices() {
+  const order = ['forensic','processing','hosting','genai','review'];
+  return order.filter(k => services[k]);
+}
+
+function updatePhasePreview() {
+  const sel = getSelectedServices();
+  const el = document.getElementById('phase-preview');
+  if (!el) return;
+  if (sel.length === 0) { el.style.display='none'; return; }
+  el.style.display = 'block';
+  const names = { forensic:'Forensic Data Collection', processing:'Data Processing/ECA', hosting:'Hosting, Analytics & Review Support', genai:'GenAI', review:'Managed Review' };
+  document.getElementById('phase-order-text').textContent = sel.map((k,i)=>`Phase ${i+1}: ${names[k]}`).join(' → ');
+}
+
+/* ── Build rate-sheet review table (all services, no qty) ── */
+function buildRateSheetTable() {
+  const container = document.getElementById('rate-sheet-table-container');
+  if (!container) return;
+  container.innerHTML = '';
+  const cur = document.getElementById('currency').value || '£';
+
+  Object.keys(rateCard).forEach(key => {
+    const data = rateCard[key];
+    const section = document.createElement('div');
+    section.className = 'fee-section';
+    let html = `<div class="fee-section-header">${data.title}</div>`;
+    html += `<table class="fee-table"><thead><tr>
+      <th>Service</th><th>Unit</th>
+      <th class="right">Rate <span style="font-weight:400;font-size:10px;color:rgba(255,255,255,0.7)">(click to edit)</span></th>
+    </tr></thead><tbody>`;
+
+    data.groups.forEach(grp => {
+      if (grp.label) html += `<tr><td colspan="3" style="background:#DEEAF6;font-size:11px;font-weight:700;color:#001F5F;padding:6px 12px;text-transform:uppercase;letter-spacing:0.04em;">${grp.label}</td></tr>`;
+      grp.rows.forEach(row => {
+        const rateVal = row.rate < 1 ? row.rate.toFixed(2) : row.rate;
+        const rateStr = cur + rateVal;
+        const floorNote = row.floor !== undefined
+          ? `<span style="color:#C0392B;font-size:10px;display:block;font-style:italic;">Floor: ${cur}${row.floor} (internal guidance — not in output)</span>`
+          : '';
+        const rateNoteHtml = row.rateNote ? `<span style="font-size:10px;color:var(--muted);display:block;">${row.rateNote}</span>` : '';
+        const descNoteHtml = row.descNote ? `<span style="font-size:10px;color:var(--muted);display:block;font-style:italic;">${row.descNote}</span>` : '';
+
+        html += `<tr>
+          <td>${row.desc}${descNoteHtml}</td>
+          <td style="color:var(--muted)">${row.unit}</td>
+          <td class="right">
+            <span id="rs_rate_display_${row.id}" style="font-weight:600;cursor:pointer;text-decoration:underline dotted;color:#001F5F;"
+              onclick="editRateRS('${row.id}', ${row.rate})">${rateStr}</span>
+            <input type="number" id="rs_rate_input_${row.id}" value="${rateVal}" step="any" min="0"
+              style="display:none;width:80px;text-align:right;padding:3px 6px;border:1.5px solid var(--teal);border-radius:4px;"
+              onblur="saveRateRS('${row.id}', '${cur}')" onkeydown="if(event.key==='Enter')saveRateRS('${row.id}','${cur}')">
+            ${floorNote}${rateNoteHtml}
+          </td>
+        </tr>`;
+      });
+    });
+
+    html += `</tbody></table>`;
+    section.innerHTML = html;
+    container.appendChild(section);
+  });
+}
+
+function editRateRS(id, defaultVal) {
+  document.getElementById('rs_rate_display_' + id).style.display = 'none';
+  const inp = document.getElementById('rs_rate_input_' + id);
+  inp.style.display = 'inline-block';
+  inp.focus(); inp.select();
+}
+
+function saveRateRS(id, cur) {
+  const inp = document.getElementById('rs_rate_input_' + id);
+  const val = parseFloat(inp.value) || 0;
+  const display = document.getElementById('rs_rate_display_' + id);
+  display.textContent = cur + (val < 1 ? val.toFixed(2) : val.toLocaleString());
+  display.style.display = 'inline';
+  inp.style.display = 'none';
+  // Mirror to fee-table rate inputs if present
+  const feeInp = document.getElementById('rate_input_' + id);
+  if (feeInp) { feeInp.value = val; recalc(); }
+}
+
+/* ── Collect rate-sheet rates for docx ── */
+function collectRateSheetRates() {
+  const rates = {};
+  Object.keys(rateCard).forEach(key => {
+    rateCard[key].groups.forEach(grp => {
+      grp.rows.forEach(row => {
+        const rsInp = document.getElementById('rs_rate_input_' + row.id);
+        const feeInp = document.getElementById('rate_input_' + row.id);
+        const inp = rsInp || feeInp;
+        if (inp) {
+          const v = parseFloat(inp.value);
+          if (!isNaN(v)) rates[row.id] = v;
+        } else {
+          rates[row.id] = row.rate;
+        }
+      });
+    });
+  });
+  return rates;
+}
+
+/* ── Build fee tables in Step specific-prices ── */
+function buildFeeTables() {
+  const container = document.getElementById('fee-tables-container');
+  container.innerHTML = '';
+  const sel = getSelectedServices();
+  const cur = document.getElementById('currency').value || '£';
+
+  sel.forEach(key => {
+    const data = rateCard[key];
+    const section = document.createElement('div');
+    section.className = 'fee-section';
+    let html = `<div class="fee-section-header">${data.title}</div>`;
+    if (data.note) html += `<div style="padding:8px 12px;font-size:11px;color:var(--muted);font-style:italic;">${data.note}</div>`;
+    html += `<table class="fee-table"><thead><tr>
+      <th>Service</th><th>Unit</th>
+      <th class="right">Rate <span style="font-weight:400;font-size:10px;color:var(--muted)">(click to edit)</span></th>
+      <th class="right">Est. Units</th><th class="right">Est. Total</th>
+    </tr></thead><tbody>`;
+
+    data.groups.forEach(grp => {
+      if (grp.label) html += `<tr><td colspan="5" style="background:#DEEAF6;font-size:11px;font-weight:700;color:#001F5F;padding:6px 12px;text-transform:uppercase;letter-spacing:0.04em;">${grp.label}</td></tr>`;
+      grp.rows.forEach(row => {
+        const rateVal = row.rate < 1 ? row.rate.toFixed(2) : row.rate;
+        const rateStr = cur + rateVal;
+        const floorNote = row.floor !== undefined ? `<span style="color:#C0392B;font-size:10px;display:block;">Floor: ${cur}${row.floor}</span>` : '';
+        const rateNoteHtml = row.rateNote ? `<span style="font-size:10px;color:var(--muted);display:block;">${row.rateNote}</span>` : '';
+        const descNoteHtml = row.descNote ? `<span style="font-size:10px;color:var(--muted);display:block;font-style:italic;">${row.descNote}</span>` : '';
+
+        // Brainspace: add complimentary checkbox
+        let brainspaceHtml = '';
+        if (row.brainspace) {
+          brainspaceHtml = `
+            <div style="margin-top:4px;">
+              <label style="font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--teal);cursor:pointer;">
+                <input type="checkbox" id="comp_${row.id}" onchange="toggleComp('${row.id}')" style="margin-right:4px;accent-color:var(--teal);">
+                Complimentary
+              </label>
+            </div>`;
+        }
+
+        html += `<tr id="row_${row.id}">
+          <td>${row.desc}${descNoteHtml}${brainspaceHtml}</td>
+          <td style="color:var(--muted)">${row.unit}</td>
+          <td class="right">
+            <span id="rate_display_${row.id}" style="font-weight:600;cursor:pointer;text-decoration:underline dotted;color:#001F5F;"
+              onclick="editRate('${row.id}', ${row.rate})">${rateStr}</span>
+            <input type="number" id="rate_input_${row.id}" value="${rateVal}" step="any" min="0"
+              style="display:none;width:80px;text-align:right;padding:3px 6px;border:1.5px solid var(--teal);border-radius:4px;"
+              onblur="saveRate('${row.id}', '${cur}')" onkeydown="if(event.key==='Enter')saveRate('${row.id}','${cur}')">
+            ${floorNote}${rateNoteHtml}
+          </td>
+          <td class="right">
+            <input type="number" min="0" step="any" id="qty_${row.id}" placeholder="0"
+              onchange="recalc()" oninput="recalc()"
+              style="${row.brainspace ? '' : ''}">
+          </td>
+          <td class="right" id="line_${row.id}" style="color:#001F5F;font-weight:600;">—</td>
+        </tr>`;
+      });
+    });
+
+    html += `<tr class="subtotal-row"><td colspan="4">Subtotal – ${data.title}</td><td class="right" id="sub_${key}">—</td></tr>`;
+    html += `</tbody></table>`;
+    section.innerHTML = html;
+    container.appendChild(section);
+  });
+
+  recalc();
+}
+
+function editRate(id, defaultVal) {
+  document.getElementById('rate_display_' + id).style.display = 'none';
+  const inp = document.getElementById('rate_input_' + id);
+  inp.style.display = 'inline-block';
+  inp.focus();
+  inp.select();
+}
+
+function saveRate(id, cur) {
+  const inp = document.getElementById('rate_input_' + id);
+  const val = parseFloat(inp.value) || 0;
+  const display = document.getElementById('rate_display_' + id);
+  display.textContent = cur + (val < 1 ? val.toFixed(2) : val.toLocaleString());
+  display.style.display = 'inline';
+  inp.style.display = 'none';
+  recalc();
+}
+
+function toggleComp(id) {
+  const checked = document.getElementById('comp_' + id).checked;
+  const qtyInp = document.getElementById('qty_' + id);
+  qtyInp.disabled = false; // keep enabled so user can still enter units
+  recalc();
+}
+
+function recalc() {
+  const cur = document.getElementById('currency').value || '£';
+  let grand = 0;
+  const sel = getSelectedServices();
+
+  sel.forEach(key => {
+    const data = rateCard[key];
+    let subtotal = 0;
+    data.groups.forEach(grp => {
+      grp.rows.forEach(row => {
+        const inp = document.getElementById('qty_' + row.id);
+        const lineEl = document.getElementById('line_' + row.id);
+        const rateInp = document.getElementById('rate_input_' + row.id);
+        if (!inp || !lineEl) return;
+
+        // Get current rate (may have been edited)
+        const rateDisplay = document.getElementById('rate_display_' + row.id);
+        let currentRate = row.rate;
+        if (rateInp) {
+          const parsed = parseFloat(rateInp.value);
+          if (!isNaN(parsed)) currentRate = parsed;
+        }
+
+        const qty = parseFloat(inp.value) || 0;
+        const isComp = row.brainspace && document.getElementById('comp_' + row.id) && document.getElementById('comp_' + row.id).checked;
+
+        if (qty > 0) {
+          const total = qty * currentRate;
+          if (isComp) {
+            lineEl.innerHTML = `<span style="text-decoration:line-through;color:var(--muted);">${cur}${total.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2})}</span> <span style="color:var(--teal);font-size:11px;font-weight:700;">COMPL.</span>`;
+            // don't add to subtotal
+          } else {
+            lineEl.textContent = cur + total.toLocaleString('en-GB', {minimumFractionDigits:2, maximumFractionDigits:2});
+            subtotal += total;
+          }
+        } else {
+          lineEl.textContent = '—';
+        }
+      });
+    });
+    const subEl = document.getElementById('sub_' + key);
+    if (subEl) {
+      if (subtotal > 0) {
+        subEl.textContent = cur + subtotal.toLocaleString('en-GB', {minimumFractionDigits:2, maximumFractionDigits:2});
+      } else {
+        subEl.textContent = '—';
+      }
+    }
+    grand += subtotal;
+  });
+
+  const grandEl = document.getElementById('grand-total-display');
+  if (grandEl) grandEl.textContent = cur + grand.toLocaleString('en-GB', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+/* ── Collect fee data for SOW ── */
+function collectFeeData() {
+  const cur = document.getElementById('currency').value || '£';
+  const sel = getSelectedServices();
+  const result = [];
+
+  sel.forEach(key => {
+    const data = rateCard[key];
+    const section = { key, title: data.title, groups: [], subtotal: 0 };
+    data.groups.forEach(grp => {
+      const filteredRows = [];
+      grp.rows.forEach(row => {
+        const inp = document.getElementById('qty_' + row.id);
+        const qty = inp ? (parseFloat(inp.value) || 0) : 0;
+        const rateInp = document.getElementById('rate_input_' + row.id);
+        let currentRate = row.rate;
+        if (rateInp) { const p = parseFloat(rateInp.value); if (!isNaN(p)) currentRate = p; }
+
+        const isComp = row.brainspace && document.getElementById('comp_' + row.id) && document.getElementById('comp_' + row.id).checked;
+
+        if (qty > 0 || isComp) {
+          const total = qty * currentRate;
+          if (!isComp) section.subtotal += total;
+          filteredRows.push({
+            desc: row.desc, descNote: row.descNote || null,
+            unit: row.unit, rate: currentRate, floor: row.floor,
+            rateNote: row.rateNote || null,
+            qty, total, cur,
+            complimentary: isComp,
+            brainspace: !!row.brainspace
+          });
+        }
+      });
+      if (filteredRows.length > 0) section.groups.push({ label: grp.label, rows: filteredRows });
+    });
+    result.push(section);
+  });
+  return result;
+}
+
+/* ── Build SOW HTML ── */
+
+function buildSOW() {
+  // showPhase: rate sheet always shows all phases; specific-only shows selected phases only
+  function showPhase(key) {
+    if (inclusions.ratesheet) return true;          // rate sheet → all phases
+    if (inclusions.specificcosts) return services[key]; // specifics only → selected only
+    return true;                                     // fallback
+  }
+
+  const g = id => document.getElementById(id).value.trim();
+  const cur = g('currency') || '£';
+  const dateRaw = g('agreementDate');
+  let dateStr = 'DD Month YYYY';
+  if (dateRaw) {
+    const d = new Date(dateRaw + 'T12:00:00');
+    dateStr = d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  }
+
+  const sel = getSelectedServices();
+  const feeData = collectFeeData();
+
+  /* Phase scope text */
+  const scopeSections = [];
+  let phaseNum = 0;
+
+  // Pre-work always included
+  scopeSections.push(`
+    <div class="sow-phase-heading"><span class="phase-label">Pre-Work | </span>LAUNCH</div>
+    <ul class="sow-ul">
+      <li>Our consultants will sit with the Client case team to understand the issues, goals, timeframes, strategy and deliverables of the project.</li>
+    </ul>
+  `);
+
+  if (showPhase('forensic')) {
+    phaseNum++;
+    scopeSections.push(`
+      <div class="sow-phase-heading"><span class="phase-label">Phase ${phaseNum} | </span>FORENSIC DATA COLLECTION</div>
+      <ul class="sow-ul">
+        <li>Digital Forensic services are included as a resource for ad-hoc collections and consulting, ensuring support is available when needed.</li>
+        <li>Services include: social media collections; mobile device acquisitions; computer imaging (standard and advanced); M365 and Google Workspace collections; cloud-hosted email and storage repository collections; email archive collections; remote and onsite collections; forensic analysis, consulting, and project oversight.</li>
+      </ul>
+    `);
+  }
+
+  if (showPhase('processing')) {
+    phaseNum++;
+    scopeSections.push(`
+      <div class="sow-phase-heading"><span class="phase-label">Phase ${phaseNum} | </span>DATA PROCESSING &amp; EARLY CASE ASSESSMENT</div>
+      <ul class="sow-ul">
+        <li>The TransPerfect Legal Project Management team will process the collected data into Digital Reef, our proprietary processing and Early Case Assessment ("ECA") tool. We will use standard culling techniques like de-duplication, deNIST and date range filters to reduce the volume of data to be promoted for review.</li>
+        <li>We would use the reporting functionality of Digital Reef's pre-review analytics to give insight to the data, for example custodian analysis, domain names, language, clustering, threading, sentiment analysis and "find more like" analysis based on existing relevant documents. The data can be presented in intuitive bar charts, dynamic graphs and lists.</li>
+      </ul>
+    `);
+  }
+
+  if (showPhase('hosting')) {
+    phaseNum++;
+    scopeSections.push(`
+      <div class="sow-phase-heading"><span class="phase-label">Phase ${phaseNum} | </span>DATA HOSTING, ANALYTICS &amp; REVIEW SUPPORT</div>
+      <ul class="sow-ul">
+        <li>Once data has been processed and filtered, it will be promoted to Relativity for review by the case team. TransPerfect Legal Project Managers will support the case team through the review process by:</li>
+      </ul>
+      <ul class="sow-ul sub">
+        <li>setting up and managing the review database, including indexing data, structure and workflows;</li>
+        <li>applying Relativity and Brainspace analytics as needed;</li>
+        <li>conducting Relativity/Digital Reef training;</li>
+        <li>overseeing and coordinating data from collections through processing, hosting, review, and production; and</li>
+        <li>preparing reports on data types, data volumes, and review and production metrics.</li>
+      </ul>
+      <ul class="sow-ul">
+        <li>TransPerfect Legal Consultants can support the use of Technology Assisted Review ("TAR") to accelerate document review through the use of predictive coding.</li>
+        <li>Opposing disclosures will be made available in Relativity for case team review. TransPerfect Legal Project Managers and Consultants can support the use of de-duplication, conceptual similarity analytics, TAR and AI to identify relevant documents in the opposing disclosure.</li>
+      </ul>
+    `);
+  }
+
+  if (showPhase('genai')) {
+    phaseNum++;
+    scopeSections.push(`
+      <div class="sow-phase-heading"><span class="phase-label">Phase ${phaseNum} | </span>GENERATIVE AI</div>
+      <ul class="sow-ul">
+        <li>TransPerfect Legal's GenAI services cover the design, implementation, and optimisation of generative AI workflows within your eDiscovery and legal review processes.</li>
+        <li>Services include Cicero (RAG-based Q&amp;A), eDiscoveryAI (review, PII detection and extraction), and Early Case Intelligence (ECI) tools including Core, Case Elements, and Casebot.</li>
+        <li>Our consultants work alongside your case team to ensure AI tools are applied accurately and defensibly, with full auditability of AI-assisted decisions.</li>
+      </ul>
+    `);
+  }
+
+  if (showPhase('review')) {
+    phaseNum++;
+    scopeSections.push(`
+      <div class="sow-phase-heading"><span class="phase-label">Phase ${phaseNum} | </span>MANAGED REVIEW</div>
+      <ul class="sow-ul">
+        <li><strong>Review Managers</strong> are experienced review lawyers who have completed TransPerfect Legal's Managed Review Oversight Training. They play a critical role in escalating questions, managing the Q/A Log, and implementing Quality Control (QC) and Quality Assurance (QA) measures. Review Managers are supervised by the Project Manager and are fully dedicated to a single matter for the duration of the review.</li>
+        <li><strong>Project Managers</strong> oversee the review team, including the Review Managers, and ensure all tasks are completed on time. All communications with counsel should be led by the Review Manager, with the Project Manager copied on all correspondence.</li>
+      </ul>
+    `);
+  }
+
+  /* ── Responsibility Outlines ── */
+  const responsibilityOutlines = {
+    forensic: {
+      title: 'Forensic Technology & Consulting Responsibility Outline',
+      columns: [
+        {
+          heading: null,
+          sections: [
+            {
+              label: 'Forensic Tech Services',
+              items: [
+                'Social Media Collections (not including analysis or investigation)',
+                'Basic iPhone Mobile Device Acquisition (in-lab only)',
+                'Basic Windows Computer Imaging (in-lab only)',
+                'M365 and Google Workspace collections (monitoring and download of collections only)',
+                'Administrative Logistics (e.g., shipping logistics, data transfer/consolidation, COC documentation, Case Shutdown Procedures)',
+              ]
+            },
+            {
+              label: 'Standard Forensic Acquisitions and Services',
+              items: [
+                'Social Media Collections (not including analysis or investigation)',
+                'Basic iPhone Mobile Device Acquisition (in-lab only)',
+                'Basic Windows Computer Imaging (in-lab only)',
+                'M365 and Google Workspace collections (monitoring and download of collections only)',
+                'Administrative Logistics (e.g., shipping logistics, data transfer/consolidation, COC documentation, Case Shutdown Procedures)',
+                'Cloud-Hosted Email Collections (Gmail, iCloud, etc.)',
+                'Cloud Storage Repository Collections (Dropbox, Box.com, etc.)',
+                'Email Archive Collections (Global Relay, Smarsh, Barracuda)',
+                'M365 and Google Workspace Corporate Email Collection (initiation of collection)',
+                'Mobile Device Collections (including advanced iPhone collections in-lab)',
+                'Computer Imaging (including advanced Windows Computer imaging in-lab)',
+                'Remote Collections',
+                'Reporting (Computers, Mobile Devices, Cloud Data)',
+                'Network Collections',
+                'Onsite Collections',
+              ]
+            },
+          ]
+        },
+        {
+          heading: null,
+          sections: [
+            {
+              label: 'Forensic Consulting',
+              items: [
+                'Forensic Analysis',
+                'Project Oversight, QC, and Troubleshooting',
+                'Client Consultation Calls and Emails',
+                'Custom Collection Workflow Design',
+                'Advanced Mobile Device Forensics',
+                'Onsite Collections Requiring Senior Practitioner(s)',
+              ]
+            },
+          ]
+        }
+      ]
+    },
+    hosting: {
+      title: 'Project Management & Consulting Responsibility Outline',
+      columns: [
+        {
+          heading: null,
+          sections: [
+            {
+              label: 'Project Management',
+              items: [
+                'Generation of ECA ingest and exceptions reporting',
+                'Running search terms in Digital Reef',
+                'Export of data from Digital Reef',
+                'Loading data to Relativity',
+                'Relativity environment setup and customisation in anticipation of review',
+                'Running structured analytics (i.e. email threading, language ID, TND)',
+                'Relativity user training',
+                'Review validations set up',
+                'Reviewer reporting set up, dissemination of daily reporting',
+                'Machine Translation set up and bulk machine translation',
+                'Disclosure preparation',
+                'Export and manual edits to disclosure deliverable',
+                'Any client communications, correspondence, instructions (calls, emails, etc.)',
+                'Ongoing daily review support (i.e. saved searches, batching, groups/permissions)',
+                'Internal workflow planning and discussions',
+              ]
+            },
+          ]
+        },
+        {
+          heading: null,
+          sections: [
+            {
+              label: 'Consulting',
+              items: [
+                'Relativity Analytics + Technology Assisted Review (TAR) predictive coding reviews, including: Brainspace TAR workflow set-up, Brainspace TAR training and analysis, Brainspace TAR reporting',
+                'Mobile data review workflow (i.e. surrounding messages)',
+                'Blackout Consultation and Auto-redactions',
+                'Custom Relativity Scripts',
+              ]
+            },
+          ]
+        }
+      ]
+    },
+    review: {
+      title: 'Managed Review Responsibility Outline',
+      prose: [
+        {
+          heading: 'Review Managers',
+          text: `Review Managers are experienced review lawyers who have completed TransPerfect Legal's Managed Review Oversight Training. They play a critical role in escalating questions, managing the Q/A Log, and implementing Quality Control (QC) and Quality Assurance (QA) measures. Their primary responsibility is to support the case team by ensuring that quality standards are met with the utmost accuracy and efficiency. Review Managers are supervised by the Project Manager and are fully dedicated to a single matter for the duration of the review.`
+        },
+        {
+          heading: 'Project Managers',
+          text: `The Project Manager serves as a key member of the case team, working in collaboration with outside counsel from the planning stages to the conclusion of the review. They oversee the review team, including the Review Managers, and ensure all tasks are completed on time. While the Project Manager does not review, access, or code documents, they supervise the Review Manager and Reviewers. All communications with counsel should be led by the Review Manager, with the Project Manager copied on all correspondence to maintain oversight and provide guidance.`
+        }
+      ]
+    }
+  };
+
+  function buildResponsibilityHTML(key) {
+    const data = responsibilityOutlines[key];
+    if (!data) return '';
+    let html = `<div class="sow-responsibility-block">
+      <div class="sow-responsibility-title">${data.title}</div>`;
+
+    if (data.prose) {
+      // Managed Review: prose paragraphs
+      html += `<div class="sow-responsibility-prose">`;
+      data.prose.forEach(p => {
+        html += `<p><strong>${p.heading}</strong></p><p>${p.text}</p>`;
+      });
+      html += `</div>`;
+    } else if (data.columns) {
+      // Two-column layout
+      html += `<div class="sow-responsibility-cols">`;
+      data.columns.forEach(col => {
+        html += `<div class="sow-responsibility-col">`;
+        col.sections.forEach(sec => {
+          html += `<div class="sow-responsibility-section-label">${sec.label}</div><ul class="sow-responsibility-ul">`;
+          sec.items.forEach(item => {
+            html += `<li>${item}</li>`;
+          });
+          html += `</ul>`;
+        });
+        html += `</div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  /* Pricing note */
+  const pricingNoteVal = document.getElementById('pricingNote').value;
+  const pricingNote = pricingNoteVal === 'estimates'
+    ? 'Cost projections provided in this Agreement are based on information currently available and/or assumptions and are estimates only.'
+    : 'At this stage, we do not know enough about the likely data sizes or applicable date ranges to meaningfully provide a quote for the entire project so we are sharing applicable unit rates. If you require more certainty on data volumes for the purpose of this quote, our forensics team would be happy to offer a free Data Scoping Call with Client and End-Client IT teams to work a more accurate data volume analysis for the relevant data sources.';
+
+  /* pricing now handled in interleaved loop above */
+
+  /* Managed review payroll clause */
+  const reviewClause = services.review ? `
+    <div class="sow-tc-heading">2) Additional Invoicing and Payment for Staffing Services</div>
+    <div class="sow-tc-body">
+      <p>To the extent that a Project includes Staffing services (i.e., supplying contract review attorneys or non-attorney reviewers (a "<span class="bold">Document Reviewer</span>")), the terms in this paragraph apply to such Staffing services.</p>
+      <p>TRANSPERFECT LEGAL will invoice Client every month. Invoices shall be accompanied by the pertinent reviewer timesheets or applicable electronic records pertaining to time worked. Client's signature and/or electronic approval on TRANSPERFECT LEGAL's timesheets certifies that the hours shown are correct and authorises TRANSPERFECT LEGAL to bill Client for the hours worked by the named Document Reviewer.</p>
+      <p><span class="bold">NO PAYROLL TRANSFER</span> — Client agrees not to directly or indirectly cause or permit any engaged Document Reviewer assigned to Client by TRANSPERFECT LEGAL pursuant to this Agreement to transfer to another entity's payroll, or to perform services for Client whilst on the payroll of any person or firm other than TRANSPERFECT LEGAL during the term of this Agreement and for a period of 12 months thereafter.</p>
+    </div>` : '';
+
+  const clientFirm = g('clientFirm') || '[CLIENT FIRM]';
+  const clientEntity = g('clientEntity') || '[CLIENT LEGAL ENTITY]';
+  const endClient = g('endClient') || '[END-CLIENT]';
+  const matterName = g('matter') || '[MATTER]';
+
+  /* ── Rate Sheet HTML for output (floors excluded) ── */
+  let rateSheetHTML = '';
+  if (inclusions.ratesheet) {
+
+    // Build rate sheet per service — each with its own outline then table
+    const allSvcKeys = Object.keys(rateCard);
+    let pmOutlineDone = false;
+
+    allSvcKeys.forEach(svcKey => {
+      const data = rateCard[svcKey];
+
+      // ── Responsibility outline before each service ──
+      const outlineData = responsibilityOutlines[svcKey];
+      if (outlineData) {
+        rateSheetHTML += buildResponsibilityHTML(svcKey);
+        rateSheetHTML += '<div style="height:12px;"></div>';
+      } else if ((svcKey === 'processing' || svcKey === 'hosting') && !pmOutlineDone) {
+        rateSheetHTML += buildResponsibilityHTML('hosting');
+        rateSheetHTML += '<div style="height:12px;"></div>';
+        pmOutlineDone = true;
+      }
+
+      // ── Rates table for this service ──
+      rateSheetHTML += `<div class="sow-pricing-block">
+      <div class="sow-pricing-block-title">${data.title}</div>
+      <table class="sow-fee-table">
+        <tr class="tbl-header"><th>Service</th><th>Unit</th><th class="rate-cell">Rate</th></tr>`;
+
+      data.groups.forEach(grp => {
+        if (grp.label) rateSheetHTML += `<tr><td colspan="3" style="background:#F2F6FB;font-size:8pt;color:#444;font-style:italic;padding:4px 10px;">${grp.label}</td></tr>`;
+        grp.rows.forEach(row => {
+          const rsInp = document.getElementById('rs_rate_input_' + row.id);
+          const feeInp = document.getElementById('rate_input_' + row.id);
+          const inp = rsInp || feeInp;
+          let rate = row.rate;
+          if (inp) { const v = parseFloat(inp.value); if (!isNaN(v)) rate = v; }
+          const rateStr = rate < 1 ? cur + rate.toFixed(2) : cur + Number(rate).toLocaleString('en-GB');
+          const noteHtml = row.rateNote ? `<br><span style="font-size:7.5pt;color:#555;">${row.rateNote}</span>` : '';
+          const descNoteHtml = row.descNote ? `<br><span style="font-size:7.5pt;color:#666;font-style:italic;">${row.descNote}</span>` : '';
+          rateSheetHTML += `<tr>
+            <td>${row.desc}${descNoteHtml}</td>
+            <td>${row.unit}</td>
+            <td class="rate-cell">${rateStr}${noteHtml}</td>
+          </tr>`;
+        });
+      });
+
+      rateSheetHTML += `</table></div><div style="height:20px;"></div>`;
+    });
+  }
+
+
+  /* ── Build interleaved responsibility + pricing per service (specific costs) ── */
+  let interleavedHTML = '';
+  let grandTotal = 0;
+  const cur2 = cur; // alias for use inside template
+
+  // Only build specific cost breakdown if that option is selected
+  if (inclusions.specificcosts) {
+
+  // Track whether PM & Consulting outline has been shown (shared by processing + hosting)
+  let pmOutlineShown = false;
+
+  sel.forEach(key => {
+    const data = rateCard[key];
+
+    // 1. Responsibility outline — processing and hosting share the same one
+    if (key === 'processing' || key === 'hosting') {
+      if (!pmOutlineShown) {
+        interleavedHTML += buildResponsibilityHTML('hosting');
+        pmOutlineShown = true;
+      }
+    } else {
+      interleavedHTML += buildResponsibilityHTML(key);
+    }
+
+    // 2. Pricing table for this service
+    const sectionFeeData = feeData.find(s => s.key === key);
+    if (!sectionFeeData || sectionFeeData.groups.length === 0) return;
+
+    grandTotal += sectionFeeData.subtotal;
+
+    interleavedHTML += `<div class="sow-pricing-block">
+      <div class="sow-pricing-block-title">${data.title}</div>
+      <table class="sow-fee-table">
+        <tr class="tbl-header"><th>Service</th><th>Unit</th><th>Rate</th><th>Est. Units</th><th>Est. Total</th></tr>`;
+
+    sectionFeeData.groups.forEach(grp => {
+      if (grp.label) interleavedHTML += `<tr class="tbl-subheader"><td colspan="5">${grp.label}</td></tr>`;
+      grp.rows.forEach(row => {
+        const rateStr = row.rate < 1 ? cur + row.rate.toFixed(2) : cur + row.rate.toLocaleString();
+        // Floor rates intentionally excluded from output — shown in wizard UI only
+        const rateNoteHtml = row.rateNote ? `<br><span style="font-size:7.5pt;color:#555;">${row.rateNote}</span>` : '';
+        const descExtra = row.descNote ? `<br><span style="font-size:7.5pt;color:#666;font-style:italic;">${row.descNote}</span>` : '';
+        let totalCell = '';
+        if (row.complimentary) {
+          const struckTotal = cur + row.total.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+          totalCell = `<td class="rate-cell"><span style="text-decoration:line-through;color:#999;">${struckTotal}</span> <strong style="color:#00A499;">Complimentary</strong></td>`;
+        } else {
+          const totalStr = cur + row.total.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+          totalCell = `<td class="rate-cell">${totalStr}</td>`;
+        }
+        interleavedHTML += `<tr>
+          <td>${row.desc}${descExtra}</td>
+          <td>${row.unit}</td>
+          <td class="rate-cell">${rateStr}${rateNoteHtml}</td>
+          <td class="rate-cell">${row.qty.toLocaleString()}</td>
+          ${totalCell}
+        </tr>`;
+      });
+    });
+
+    const subStr = sectionFeeData.subtotal > 0
+      ? cur + sectionFeeData.subtotal.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2})
+      : '—';
+    interleavedHTML += `<tr class="subtotal-row"><td colspan="4">Subtotal</td><td style="text-align:right">${subStr}</td></tr>`;
+    interleavedHTML += `</table></div>`;
+  });
+
+  // Grand total after all services
+  if (grandTotal > 0) {
+    const grandStr = cur + grandTotal.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+    interleavedHTML += `<table class="sow-fee-table"><tr class="total-row"><td colspan="4"><strong>ESTIMATED TOTAL (EXCL. VAT)</strong></td><td><strong>${grandStr}</strong></td></tr></table>`;
+  }
+
+  } // end if (inclusions.specificcosts)
+
+  // Payment terms always follow
+  interleavedHTML += `
+    <div class="sow-payment-terms-block">
+      <div class="sow-tc-heading" style="margin-top:18px;">Payment Terms</div>
+      <div class="sow-tc-body" style="font-size:9pt;">
+        <p>All pricing is exclusive of VAT.</p>
+        <ul style="padding-left:20px;margin:6px 0;">
+          <li>Final fees will be based on actual units incurred and work performed.</li>
+          <li>TransPerfect Legal will keep a record of all work completed and can provide project management audit logs on request.</li>
+          <li>Data sizes less than 0.5GB will be processed per hour of project management.</li>
+          <li>Services requested outside of the scope of this agreement will be quoted on request and written confirmation will be required before work is undertaken.</li>
+        </ul>
+      </div>
+    </div>`;
+
+  const sow = `
+  <div class="sow-doc">
+
+    <!-- COVER -->
+    <div class="sow-cover">
+      <div class="sow-cover-logo-area">
+        <img class="sow-cover-logo" src="data:image/png;base64,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" alt="TransPerfect">
+        <div class="sow-cover-subtitle">Case Agreement Statement of Work</div>
+      </div>
+      <div class="sow-cover-content">
+        <table class="sow-parties-table">
+          <colgroup><col class="col-for"><col class="col-by"></colgroup>
+          <tr>
+            <th class="col-for">Prepared For:</th>
+            <th class="col-by">Prepared By:</th>
+          </tr>
+          <tr>
+            <td class="col-for">${g('clientContactName') || '[CLIENT CONTACT NAME]'}</td>
+            <td class="col-by">${g('tplAM') || '[TPL ACCOUNT MANAGER]'}</td>
+          </tr>
+          <tr>
+            <td class="col-for">${clientFirm || '[CLIENT FIRM]'}</td>
+            <td class="col-by">${g('tplTitle') || '[TITLE]'}</td>
+          </tr>
+          <tr>
+            <td class="col-for">${clientEntity || '[CLIENT LEGAL ENTITY]'}</td>
+            <td class="col-by">TransPerfect Legal</td>
+          </tr>
+          <tr>
+            <td class="col-for">${g('clientAddr1') || '[FIRST LINE ADDRESS]'}</td>
+            <td class="col-by">${g('tplAddr1') || 'Aldgate House, 33 Aldgate High Street'}</td>
+          </tr>
+          <tr>
+            <td class="col-for">${g('clientAddr2') || '[CITY, POST/ZIP CODE]'}</td>
+            <td class="col-by">${g('tplAddr2') || 'London, EC3N 1AH'}</td>
+          </tr>
+          <tr>
+            <td class="col-for">${g('clientEmail') || '[EMAIL]'}</td>
+            <td class="col-by">${g('tplEmail') || '[EMAIL]'}</td>
+          </tr>
+        </table>
+        <div class="sow-date-line">DATE: ${dateStr}</div>
+      </div>
+    </div>
+    <!-- BODY -->
+    <div class="sow-body">
+
+      <p class="sow-intro">Pursuant to this Case Agreement ("<strong>Agreement</strong>"), TransPerfect Document Management, Inc. and/or Chancery Staffing Solutions, LLC (d/b/a TransPerfect Staffing Solutions) (collectively, "<strong>TransPerfect Legal</strong>"), will provide the services described herein.<sup>1</sup></p>
+      <p class="sow-intro">These services will be provided to ${clientFirm} ("<strong>Client</strong>") in respect of Client's representation of ${endClient} (the "<strong>End-Client</strong>") in ${matterName}.</p>
+      <p style="font-family:'Poppins',sans-serif;font-size:7.8pt;color:#666;margin-bottom:16px;"><sup>1</sup> TransPerfect Staffing Solutions is the legal entity that executes document review services. TransPerfect Document Management is the legal entity that executes all other services under this Agreement, including forensics, e-discovery, deposition, paper discovery and language services.</p>
+
+      <div class="sow-section-title">Scope &amp; Assumptions</div>
+      ${scopeSections.join('')}
+
+      <hr class="sow-rule">
+
+      <div class="sow-section-title">${inclusions.ratesheet && inclusions.specificcosts ? 'Pricing' : inclusions.ratesheet ? 'Pricing — Rate Sheet' : 'Pricing — Specific Project Costs'}</div>
+      <p style="font-size:9.5pt;margin-bottom:14px;font-style:italic;">${pricingNote}</p>
+      <p style="font-size:9.5pt;margin-bottom:6px;">TransPerfect Legal will invoice based on actual work incurred.</p>
+      <p style="font-size:9.5pt;margin-bottom:18px;">Technology services projects are subject to a ${cur}250 minimum per project.</p>
+      ${inclusions.ratesheet && inclusions.specificcosts ? '<div class="sow-responsibility-title" style="margin-bottom:8px;">Rate Sheet</div>' : ''}
+      ${rateSheetHTML}
+      ${rateSheetHTML && interleavedHTML.trim() ? '<hr class="sow-mini-rule">' : ''}
+      ${inclusions.ratesheet && inclusions.specificcosts ? '<div class="sow-responsibility-title" style="margin-top:20px;margin-bottom:8px;">Specific Project Costs</div>' : ''}
+      ${interleavedHTML}
+
+
+
+      <hr class="sow-rule">
+
+      <div class="sow-section-title sow-tc-page-break">Terms and Conditions</div>
+
+      <div class="sow-tc-columns">
+<div class="sow-tc-heading-inline">1) INVOICING AND PAYMENT</div>
+<p>Client has the sole responsibility to make full payment of all charges and expenses relating to the services contemplated in this Agreement (the &#8220;<strong>Project</strong>&#8221;) within thirty (30) days of the date of receipt of the invoice from TRANSPERFECT LEGAL (which shall be deemed to be received no later than the third business day after such invoice is sent). Applicable taxes may be added to Client&#8217;s invoices and are payable by Client. As of the first anniversary of the date hereof, and on each anniversary thereafter, TRANSPERFECT LEGAL shall increase all fees covered by this Agreement and any related SOW by ten percent (10%). Invoices not paid within the foregoing period or disputed in accordance with Section 3 below are hereby deemed delinquent (&#8220;<strong>Delinquent Invoices</strong>&#8221;). In the event that the duration of any Project extends beyond thirty (30) days, the Client will be invoiced according to the billing schedule contained in this Agreement (if any) or for work completed to date in 30-day intervals. Collection of related payments from any third party (including, without limitation, any client of the Client) is a private matter of the Client and shall not affect the Client&#8217;s responsibility for payment to TRANSPERFECT LEGAL. Upon signing this Agreement, Client shall provide TRANSPERFECT LEGAL with any special address, internal coding or purchase order number to ensure that Client&#8217;s payments to TRANSPERFECT LEGAL is remitted in accordance with this Agreement and any other applicable agreement, and Client&#8217;s failure to provide such information shall not relieve Client of the provisions of this Paragraph. Bills to be sent to CLIENT care of CLIENT CONTACT(S) in the event any invoice hereunder needs to be pre-approved by Client or a representative or agent of Client (the &#8220;<strong>Authorising Party</strong>&#8221;) before being sent to the party responsible for payment hereunder (the &#8220;<strong>Responsible Party</strong>&#8221;). The Authorising Party hereby agrees that TRANSPERFECT LEGAL shall be permitted to send the invoice directly to the Responsible Party without Authorising Party&#8217;s prior consent in the event such consent has not been received by TRANSPERFECT LEGAL (unless Authorising Party has notified TRANSPERFECT LEGAL of a good faith dispute with such invoice) within (XX) days of the date of delivery of such invoice to the Authorising Party. As of the first anniversary of the date hereof, and on each anniversary thereafter, TRANSPERFECT LEGAL shall increase all fees covered by this Agreement and any related SOW by ten percent (10%). Any amounts payable to any aggregator, third party vendor manager, business process outsourcing company or other third party retained by Client which charges a fee for the processing and/or payment of any invoice from Client to TRANSPERFECT LEGAL (a &#8220;<strong>Payment Processor</strong>&#8221;) shall be paid by the Client or may be added to the amount of each applicable invoice. In the event any part of an invoice is not paid by the Payment Processor, Client shall be directly liable to TRANSPERFECT LEGAL for payment of all such amounts. In the event TRANSPERFECT LEGAL is required to re-submit an invoice for any reason, the time period for payment hereunder shall continue to be measured from the date of receipt of the initial invoice. Further, in the event TRANSPERFECT LEGAL or any of its affiliates receive a subpoena, document request or other legal demand for information in connection with any work done for Client, the Client shall pay all fees, costs and expenses incurred by TRANSPERFECT LEGAL and such affiliate in responding thereto, including, without limitation, the collection, processing and reviewing of documents in response to the subpoena, document request or other legal demand for information and any fees, costs and expenses incurred in motion practice related thereto.</p>
+<div class="sow-tc-heading-inline">2) ADDITIONAL INVOICING AND PAYMENT FOR STAFFING SERVICES ONLY</div>
+<p>To the extent that a Project includes Staffing services (i.e., supplying contract review attorneys or non-attorney reviewers (a &#8220;<strong>Document Reviewer</strong>&#8221;)), the terms in this paragraph apply to such Staffing services.</p>
+<p>TRANSPERFECT LEGAL will invoice Client every month. Invoices shall be accompanied by the pertinent reviewer timesheets or applicable electronic records pertaining to time worked. Client&#8217;s signature and/or electronic approval on TRANSPERFECT LEGAL&#8217;s timesheets certifies that the hours shown are correct and authorises TRANSPERFECT LEGAL to bill Client for the hours worked by the named Document Reviewer.</p>
+<p><strong>NO PAYROLL TRANSFER</strong></p>
+<p>Client agrees not to directly or indirectly cause or permit any engaged Document Reviewer assigned to Client by TRANSPERFECT LEGAL pursuant to this Agreement to transfer to another entity&#8217;s payroll, or to perform services for Client whilst on the payroll of any person or firm other than TRANSPERFECT LEGAL during the term of this Agreement and for a period of 12 months thereafter. If an engaged Document Reviewer is hired or engaged directly by Client, Client shall pay TRANSPERFECT LEGAL a fee equal to:</p>
+<p>&#9642; 20% of the Document Reviewer&#8217;s annualised hourly bill rate (hourly bill rate X 2080) if the Document Reviewer is hired/engaged from days 0 to 60.</p>
+<p>&#9642; 15% of the Document Reviewer&#8217;s annualised hourly bill rate (hourly bill rate X 2080) if the Document Reviewer is hired/engaged from days 61 to 120.</p>
+<p>&#9642; 10% of the Document Reviewer&#8217;s annualised hourly bill rate (hourly bill rate X 2080) if the Document Reviewer is hired/engaged any time after day 121.</p>
+<p>This provision shall survive termination of this Agreement.</p>
+<div class="sow-tc-heading-inline">3) UNPAID INVOICES</div>
+<p>TRANSPERFECT LEGAL reserves the right to suspend or terminate any Project and performance hereunder and under all other agreements with the Client if the Client has any Delinquent Invoices or falls into arrears. Further, Delinquent Invoices are subject to interest of one and a half percent (1.5%) per month on any outstanding balance, or the maximum permitted by law, whichever is less. In the event that Client disputes any invoiced amount in good faith, Client shall (i) notify TRANSPERFECT LEGAL of such disputed within thirty (30) days of receipt of the disputed amount; (ii) pay all undisputed sums in accordance with Section 1 of this Agreement; and (iii) work with TRANSPERFECT LEGAL in good faith to resolve such dispute promptly. In the event Client fails to make any undisputed payment due under this Agreement, Client shall reimburse TRANSPERFECT LEGAL for its fees, expenses and costs of collection, including without limitation, arbitration and court costs and reasonable attorneys&#8217; fees.</p>
+<div class="sow-tc-heading-inline">4) CHANGES TO PROJECT</div>
+<p><strong>a.</strong> Should the Client change the parameters of a Project whilst it is in progress (e.g. turnaround time accelerated, source files not provided on time, project&#8217;s scope/size expanded, etc.), TRANSPERFECT LEGAL reserves the right to bill additional charges and/or extend the deadline for performance in accordance with the change requested. Further, should the Client request additional services to be performed, then such services will be billed to Client. Client agrees to pay any charges billed in accordance with this Paragraph 3 in addition to any charges set forth in this Agreement. Any additional charges to the Client will be billed at the rates set forth in this Agreement and are not billed as an &#8220;upcharge&#8221; or &#8220;surcharge&#8221;.</p>
+<p><strong>b.</strong> When undertaking rush projects, TRANSPERFECT LEGAL shall use reasonable efforts to ensure the quality and accuracy of such rush projects. However, without the payment of additional fees by Client in order to account for such rush, TRANSPERFECT LEGAL cannot warrant that any rush project will be of the same quality or accuracy in comparison with a non-rush based project. By requesting an accelerated turnaround time without the payment of additional fees, Client acknowledges and agrees that undertaking jobs on a rush basis may result in objective and subjective errors and inconsistencies (stylistic, grammatical, word usage etc). TRANSPERFECT LEGAL shall not be held responsible for any costs or liabilities that may result from such errors. Client acknowledges that it understands and is fully aware of these risks and agrees to undertake such rush projects with the understanding that without the payment of additional fees it may be impossible to maintain the same level of quality that would be achieved on a non-rush basis.</p>
+<p><strong>c.</strong> Client hereby grants to TRANSPERFECT LEGAL all rights and permissions in or relating to all information, data, records and other materials that are uploaded or otherwise received, directly or indirectly, from Client (&#8220;<strong>Client Data</strong>&#8221;) to process such Client Data, in compliance with its confidentiality obligations, internally for the purpose of improving the quality of its (and its Affiliates&#8217;) analytics and improving its artificial intelligence and machine learning algorithms and for developing and improving the products and services offered by TRANSPERFECT LEGAL and its Affiliates. Without limiting the foregoing, to the extent TRANSPERFECT LEGAL or its Affiliates makes any improvements to its own algorithms based upon the processing of Client Data and the resulting &#8220;machine learning&#8221; or &#8220;training&#8221; of its algorithms, Client agrees that TRANSPERFECT LEGAL and its Affiliates exclusively owns all right, title and interest in and to such improvements, including all related intellectual property rights, and same may be used for the benefit of TRANSPERFECT LEGAL&#8217;s and its Affiliates&#8217; other customers.</p>
+<div class="sow-tc-heading-inline">5) NOTICE OF CONCERNS</div>
+<p>The Client must notify TRANSPERFECT LEGAL of any concerns with TRANSPERFECT LEGAL&#8217;s performance of a Project within thirty (30) days of receipt of deliverables or completion of services or service milestones (as set forth in this Agreement) via certified letter (return receipt requested) or via electronic mail to a TRANSPERFECT LEGAL account representative. If TRANSPERFECT LEGAL is not so notified, the Client waives all rights and claims arising out of such performance.</p>
+<div class="sow-tc-heading-inline">6) LIMITATION OF LIABILITY</div>
+<p><strong>a.</strong> TRANSPERFECT LEGAL EXPRESSLY DISCLAIMS ALL REPRESENTATIONS, WARRANTIES AND CONDITIONS OF ANY KIND, EXPRESS OR IMPLIED (INCLUDING ANY WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR USE, NONINFRINGEMENT AND THOSE ARISING BY STATUTE OR OTHERWISE IN LAW OR FROM A COURSE OF DEALING OR USE OF TRADE) TO THE FULLEST EXTENT PERMITTED BY LAW, WHETHER RELATED TO THE PROVISION OF SERVICES PROVIDED UNDER THIS AGREEMENT OR OTHERWISE.</p>
+<p><strong>b.</strong> IN NO EVENT SHALL TRANSPERFECT LEGAL OR ANY OF ITS PARENTS, SUBSIDIARIES OR AFFILIATES BE LIABLE UNDER ANY THEORY AT LAW OR OTHERWISE, TO CLIENT OR ANY THIRD PARTY FOR ANY INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, EXEMPLARY OR CONSEQUENTIAL DAMAGES ARISING OUT OF OR RELATING TO THIS AGREEMENT, INCLUDING, BUT NOT LIMITED TO LOSS OF PROFITS OR REVENUES, LOSS OF SAVINGS OR THE FAILURE OF CLIENT (OR ITS CLIENT) TO RECEIVE THE BENEFITS IT EXPECTS TO DERIVE FROM THE SERVICES, EVEN IF TRANSPERFECT LEGAL HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. IN THE EVENT THAT CLIENT IS ENTITLED TO RECOVER DAMAGES FROM TRANSPERFECT LEGAL, ALL DAMAGES ARISING OUT OF OR RELATED TO THIS AGREEMENT AND TRANSPERFECT LEGAL&#8217;S PERFORMANCE OF SERVICES PROVIDED HEREUNDER ARE LIMITED, REGARDLESS OF CAUSE, INCLUDING, BUT NOT LIMITED TO, ANY CLAIM, LOSS OR DAMAGES UNDER ANY THEORY OF LAW, INCLUDING CONTRACT, TORT OR NEGLIGENCE, TO A MAXIMUM AGGREGATE AMOUNT EQUAL TO THE AMOUNT OF FEES ACTUALLY PAID BY CLIENT TO TRANSPERFECT LEGAL FOR THE SERVICES PROVIDED UNDER THIS AGREEMENT.</p>
+<p><strong>c.</strong> THE SERVICES PROVIDED UNDER THIS AGREEMENT MAY BE SUBJECT TO LIMITATIONS, DELAYS AND OTHER PROBLEMS INHERENT IN THE USE OF EQUIPMENT AND TECHNOLOGY TO PROVIDE OR DELIVER THE SERVICES. TRANSPERFECT LEGAL DOES NOT GUARANTEE THAT THE SERVICES WILL BE PERFORMED ERROR-FREE OR UNINTERRUPTED. TRANSPERFECT LEGAL IS NOT RESPONSIBLE FOR ANY DELAYS, DELIVERY FAILURES OR OTHER DAMAGE RESULTING FROM SUCH PROBLEMS.</p>
+<p><strong>d.</strong> Any action against TRANSPERFECT LEGAL in connection with or arising out of services performed under this Agreement must be commenced within 1 year after the claim arose.</p>
+<p><strong>e.</strong> Client acknowledges that: (i) TRANSPERFECT LEGAL has relied on the enforceability of the disclaimers and limitations contained herein in entering into this Agreement (collectively, the &#8220;<strong>Limitations</strong>&#8221;), (ii) the Limitations have been separately negotiated and form an essential part of this Agreement and (iii) the parties desire that the Limitations be enforceable even if any provided remedies fail of their essential purposes.</p>
+<div class="sow-tc-heading-inline">7) INDEMNIFICATION</div>
+<p><strong>a.</strong> The Client shall indemnify, defend and hold harmless TRANSPERFECT LEGAL, its Affiliates and each of their respective owners, principals, managers, representatives, partners, officers, directors, agents and employees against any and all claims, damages, losses, judgments, settlements, liabilities, costs and expenses (including reasonable attorneys&#8217; fees) (collectively, &#8220;<strong>Losses</strong>&#8221;) incurred by TRANSPERFECT LEGAL with respect to claims or demands by a third party against TRANSPERFECT LEGAL to the extent arising out of or related to (i) any gross negligence or willful misconduct by the Client; (ii) infringement of a third party&#8217;s intellectual property rights by any materials, data or information provided to TRANSPERFECT LEGAL by Client, (iii) an act or negligence by Client that constitutes a breach of privacy law (e.g. unlawful processing, storage or data leakage and (iv) any tangible property damage or personal injury caused by Client in performance of their obligations under this Agreement. As used herein, &#8220;<strong>Affiliate</strong>&#8221; shall mean any persons or entity now or hereafter in control, controlled by or under common control with a party hereto and shall also include any direct or indirect subsidiary of any of the foregoing and any company in which such party has more than a ten percent (10%) ownership interest.</p>
+<p><strong>b.</strong> TRANSPERFECT LEGAL shall indemnify, defend and hold harmless Client, and its Affiliates and each of their respective owners, principals, managers, representatives, partners, officers, directors, agents and employees against any and all Losses incurred by Client with respect to claims or demands by a third party against Client to the extent arising out of or related to (i) any gross negligence or willful misconduct by TRANSPERFECT LEGAL; and (ii) any tangible property damage or personal injury caused by TRANSPERFECT LEGAL in performance of its obligations under the Agreement.</p>
+<p><strong>c.</strong> CLIENT SHALL USE REASONABLE EFFORTS TO SEEK FULL RECOVERY UNDER ALL INSURANCE POLICIES AND/OR INDEMNIFICATION AGREEMENTS WITH THIRD PARTIES TO THE SAME EXTENT AS CLIENT WOULD IF THE APPLICABLE CLAIM WERE NOT SUBJECT TO INDEMNIFICATION HEREUNDER. IN THE EVENT AN INSURANCE OR OTHER RECOVERY IS MADE AT ANY TIME WITHIN TWO (2) YEARS OF AN INDEMNIFICATION PAYMENT BY TRANSPERFECT LEGAL WITH RESPECT TO SUCH CLAIM, THEN, TO THE EXTENT OF THE AMOUNT OF SUCH PAYMENT, A REFUND EQUAL TO THE AGGREGATE NET AMOUNT OF THE RECOVERY SHALL BE MADE PROMPTLY TO TRANSPERFECT LEGAL.</p>
+<p><strong>d.</strong> The obligation of any indemnifying party to defend, indemnify and hold harmless any indemnified party is subject to the indemnified parties: (i) notifying the indemnifying parties in writing no later than forty-five (45) days after receipt by an indemnified party of notification of a potential claim; (ii) giving the indemnifying parties sole control over the defense and settlement of any such claim; (iii) providing the indemnifying parties full cooperation for the defense of any such claim, at the indemnifying parties&#8217; expense; and (iv) not entering into any settlement or compromise of any such claim without the prior written approval of the indemnifying parties.</p>
+<p><strong>e.</strong> THE EXPRESS PROVISIONS OF THIS SECTION ARE IN LIEU OF, AND TO THE EXCLUSION OF, ALL OTHER INDEMNITY AND CONTRIBUTION OBLIGATIONS OF ANY KIND, EXPRESS OR IMPLIED, STATUTORY OR OTHERWISE, RELATING TO THE CLAIMS, AND ALL SUCH INDEMNITY AND CONTRIBUTION OBLIGATIONS ARE EXCLUDED FROM THIS AGREEMENT AND WAIVED TO THE FULLEST EXTENT NOT PROHIBITED BY LAW.</p>
+<div class="sow-tc-heading-inline">8) REMEDIES; WAIVER</div>
+<p>In the event of a breach, violation or default of this Agreement, nothing herein shall prevent the non-breaching party from pursuing all remedies it is now or hereafter entitled to under law or in equity. If TRANSPERFECT LEGAL must resort to collection of Delinquent Invoices by an agency or through legal action, the Client agrees to pay collection fees and reasonable attorney fees incurred by TRANSPERFECT LEGAL. A party&#8217;s failure to insist, in one or more instances, upon the strict performance of any provision herein, or failure or delay to take advantage of any of its rights or remedies hereunder, or failure to notify the other party of any breach, violation or default, shall not be construed as a waiver of any such performance, provision, rights, remedies, breach, violation or default either then or in the future.</p>
+<div class="sow-tc-heading-inline">9) CONFIDENTIALITY</div>
+<p>Each party agrees that all materials, data or information received by it from the other party, either directly or indirectly, in writing, orally or by drawings or inspection of samples, equipment or facilities, pursuant to, and whether prior to or following the execution of, this Agreement, is confidential and proprietary, whether or not expressly designated as such (&#8220;<strong>Confidential Material</strong>&#8221;), and agrees to use its best efforts to protect the confidentiality of the Confidential Material using at least the same measures it takes to protect its own confidential information of like kind, and shall restrict access to Confidential Material to its employees, contractors and agents (collectively, &#8220;<strong>Personnel</strong>&#8221;) on a need to know basis and to those performing the Project(s), and agrees not to disclose the Confidential Material to any third party, except as contemplated by the Project, without the disclosing party&#8217;s prior authorisation or unless directed to do so by court order. Additionally, each party agrees that the terms or proposed terms of this Agreement shall be deemed Confidential Material and not disclosed to any third parties. The recipient shall be liable for any breach of this Agreement by any of its Personnel or other third parties to whom it discloses Confidential Material. In the event either party receives a subpoena or other validly issued administrative or judicial process requesting information that constitutes Confidential Material in accordance with this paragraph, the receiving party shall promptly notify the other party of such receipt to the extent permitted by law, so that the other party may seek a protective order or other appropriate relief and the receiving party may, thereafter, comply with such subpoena or process, provided that the information so disclosed shall, except for such required disclosure, continue to be maintained in confidence by recipient as Confidential Material pursuant hereto. The receiving party shall immediately give notice to the disclosing party of any unauthorised use or disclosure of disclosing party&#8217;s Confidential Material. The receiving party agrees to assist the disclosing party in remedying any such unauthorised use or disclosure of disclosing party&#8217;s Confidential Material. Confidential Material shall be returned or destroyed upon the request of the party designating such material as Confidential Material, or upon the completion or earlier termination of any work provided under this Agreement, and the cost of so returning the Confidential Material shall be borne by the party requesting its return.</p>
+<div class="sow-tc-heading-inline">10) NON-SOLICITATION; NON-HIRING</div>
+<p>In addition to the restrictions set forth in Section 2 regarding future employment or other retention of Document Reviewers, during the period in which services are being performed under this Agreement, and for a period of one (1) year thereafter, neither Client nor any of its Affiliates shall, directly or indirectly, solicit the employment of, employ or contract with, any other employee or contractor of TRANSPERFECT LEGAL or any of its Affiliates with whom Client or any of its Affiliates had contact, either directly or indirectly, or whom performed the Project. If Client or any of its parents, affiliates or subsidiaries (or any of their respective parents, affiliates and subsidiaries) breaches this paragraph, Client shall pay as liquidated damages, and not as a penalty, the sum of $75,000 per individual, which such amount the parties agree bears a reasonable proportion to the probable loss. The parties hereto acknowledge and agree that liquidated damages is an appropriate remedy for a breach of this paragraph. If TRANSPERFECT LEGAL waives its right to such liquidated damages, Client shall reimburse TRANSPERFECT LEGAL mutually agreed upon costs of external recruitment, training, and lost revenues.</p>
+</td>
+<div class="sow-tc-heading-inline">11) NO ORAL MODIFICATION OR WAIVER</div>
+<p>Neither this Agreement nor the terms of any Project may be orally modified. Only a modification in writing, agreed to by both parties, will be enforceable. Either party may give its authorisation to any written modification via electronic mail which shall constitute such party&#8217;s written agreement to such modification. No waiver of any breach hereof will be effective unless in writing and signed by an authorised representative of the party against whom enforcement is sought. No waiver of any breach of the terms of any Project or any part of this Agreement and no course of dealing between the parties will be construed as a waiver of any subsequent breach of such terms or this Agreement.</p>
+<div class="sow-tc-heading-inline">12) FORCE MAJEURE</div>
+<p>Performance by TRANSPERFECT LEGAL of any Project is excused as long as, and to the extent that, such performance is prevented by events outside of TRANSPERFECT LEGAL&#8217;s reasonable control (each a &#8220;<strong>Force Majeure Event</strong>&#8221;), including, but not limited to, an act of God, act of public enemy or terrorist, fire, explosion, electrical power outage, strike, lockout or other labor disturbance, pandemic, epidemic, quarantine, embargo, war (whether declared or undeclared), civil disturbance, inflation, restraint or declaration of any governments, ruler or people or any other event, whether similar or dissimilar, that affects TRANSPERFECT LEGAL or its suppliers.</p>
+<div class="sow-tc-heading-inline">13) SEVERABILITY</div>
+<p>If any term, clause or provision hereof is held invalid or unenforceable by a court of competent jurisdiction, such invalidity shall not affect the validity or operation of any other term, clause or provision and the invalid term, clause or provision shall be deemed to be severed from this Agreement.</p>
+<div class="sow-tc-heading-inline">14) TERMINATION</div>
+<p>Either party may terminate this Agreement without cause upon giving the other party ninety (90) days prior written notice. During the ninety (90) day termination period, Client shall maintain TRANSPERFECT LEGAL staffing levels existing at the time of the notice of termination and shall reimburse TRANSPERFECT LEGAL for any reasonable demobilisation expenses such as equipment, personnel or real estate lease terminations, etc. The effective termination date shall be the last day of such ninety (90) day termination period and Client shall be responsible for paying all fees, expenses and other monies incurred up to and including the effective termination date, including for all undisputed products and services provided at the rates agreed to within this Agreement, plus an additional ten percent (10%) project management fee. In the event any Technology Services are terminated prior to the end of the then-existing term of the applicable license, Client shall pay a cancellation fee equal to one hundred percent (100%) of the total fees payable for the unexpired term applicable to such Technology Services. In the event any portion of the fees for such Technology Services are based on usage, the fees shall be calculated based on the prior 12-month average (or such lesser period if the license has been in effect for less than 12 months) of the monthly fees paid for such Technology Services. As used herein, &#8220;<strong>Technology Services</strong>&#8221; means all software, SaaS application services, hosting, and product integrations licensed hereunder. The parties hereby acknowledge and agree that in the event of third-party platform providers blocking IP addresses and/or DOM tags, the Technology Services&#8217; performance may be impacted. Accordingly, it shall not be deemed a service level failure or default hereunder, and TRANSPERFECT LEGAL shall have no liability or obligation in such event.</p>
+<p>Either party may terminate this Agreement for any continued material and substantial breach of the terms and conditions of this Agreement upon giving the other party fifteen (15) days prior written notice identifying specifically the alleged breach, provided that the breaching party does not cure such breach within the fifteen (15) day notice period (or commence such cure with respect to any breach that will reasonably take longer than fifteen (15) days to cure). Following any initial failure to fulfill any material responsibilities set forth herein, or failure to cooperate in good faith with the other party, the parties shall have their respective account representatives meet to discuss possible corrective actions.</p>
+<div class="sow-tc-heading-inline">15) FUTURE PROJECTS</div>
+<p>The Client may place any future orders for copying, scanning, document management or litigation support services from TRANSPERFECT LEGAL, by electronic mail to TRANSPERFECT LEGAL, which shall constitute authorisation by the Client for any projects and services set forth in such order, and shall constitute the Client&#8217;s acceptance that any such order shall be subject to this Agreement. Client agrees to use its best efforts to ensure that TRANSPERFECT LEGAL shall be its principal provider of translation and related software services and legal support services. TRANSPERFECT LEGAL shall have the right of first opportunity to bid to be the provider to Client and its affiliates of services and/or technology offered by TRANSPERFECT LEGAL and its affiliates. Client shall not contact or negotiate with other vendors of such services or technology without providing TRANSPERFECT LEGAL with adequate opportunity to present and discuss a proposal with regard to such services and/or technology, which shall not be less than ten (10) days after Client&#8217;s written notice to TRANSPERFECT LEGAL of an opportunity to provide such services and/or technology. Additionally, in the event Client reaches agreement with any third party for any such services or technology (without regard to whether such opportunity was first made available to TRANSPERFECT LEGAL), Client shall provide TRANSPERFECT LEGAL with three (3) business days&#8217; notice and the right to enter into an agreement with Client to provide such services and/or technology on the same terms and conditions as those agreed to with such third party. As used in this section, &#8220;Client&#8221; shall mean and include its parents, affiliates and subsidiaries.</p>
+<div class="sow-tc-heading-inline">16) DATA STORAGE/RETURN UPON PROJECT COMPLETION OR TERMINATION</div>
+<p>Client agrees to notify TRANSPERFECT LEGAL when a Project (or the litigation or investigation with respect to which a Project relates) is closed and/or no longer active. At such time, it is TRANSPERFECT LEGAL&#8217;s policy to securely destroy the electronically-stored information (ESI) that is in TRANSPERFECT LEGAL&#8217;s possession by (a) securely purging it from our servers and stored media and (b) providing to Client a Certificate of Destruction. If Client prefers that TRANSPERFECT LEGAL securely return the ESI to Client prior to remediation from TRANSPERFECT LEGAL&#8217;s systems, or that TRANSPERFECT LEGAL continue to store the ESI for Client, additional fees will apply.</p>
+<div class="sow-tc-heading-inline">17) GDPR COMPLIANCE</div>
+<p>In order for the parties to comply with EU General Data Protection Regulation 2016/679 (the &#8220;<strong>GDPR</strong>&#8221;), Client acknowledges and agrees that it shall notify TRANSPERFECT LEGAL in writing at such time as Client provides any documents or information to TRANSPERFECT LEGAL containing &#8220;personal data&#8221; of European citizens (a &#8220;<strong>GDPR-Governed Project</strong>&#8221;). The parties further agree that for any GDPR-Governed Projects, the parties will execute a Data Protection Addendum Addressing Article 28 GDPR (Processor Terms) and Incorporating Standard Contractual Clauses for Controller to Processor Transfers of Personal Data from the EEA to a Third Country (the &#8220;<strong>GDPR Addendum</strong>&#8221;).</p>
+<div class="sow-tc-heading-inline">18) GOVERNING LAW; DISPUTE RESOLUTION</div>
+<p>This Agreement and all rights and obligations of the parties relating hereto shall be governed by and construed in accordance with the laws of England and Wales without giving effect to any conflicts of law rules that would cause the application of the laws of any other jurisdiction. Any and all claims arising under or relating directly or indirectly to this Agreement, whether sounding in contract or tort, shall be exclusively brought in and subject to the exclusive jurisdiction of the courts that are located in London, England. Any such claim that is filed in any other court shall be conclusively deemed as violating this mandatory forum selection clause and the intent of the parties. The United Nations Convention on Contracts for the International Sale of Goods is expressly and entirely excluded and will not apply to this Agreement. The parties waive any right to a trial by jury for any disputes arising out of or relating to this Agreement. Without limiting the foregoing, at the sole election of Contractor, any controversy, dispute, or claim arising out of or relating to any amounts due pursuant to any invoices issued by TRANSPERFECT LEGAL pursuant to this Agreement that cannot be resolved amicably may be settled by binding arbitration before a single arbitrator, which shall take place in London, England and be administered by JAMS, Inc. (&#8220;<strong>JAMS</strong>&#8221;). The parties agree to cooperate with each other and JAMS to select the arbitrator within two (2) weeks after the filing of the arbitration demand. The substantive and procedural laws of England &amp; Wales shall apply to and govern any such arbitration. Discovery shall not be permitted as part of any such arbitration. Except as may be required by law or in connection with enforcing this arbitration clause or any award, order or decision pursuant to such an arbitration, the existence, content and results of any arbitration hereunder shall not be disclosed without the prior written consent of both parties, which such consent may be withheld, delayed or conditioned for any reason or no reason. Any petition, motion, or other proceeding concerning any aspect of arbitration, including any related to arbitrability or the scope or applicability of this Agreement to arbitrate, shall be exclusively subject to the provisions of this section. The provisions herein relating to TRANSPERFECT LEGAL&#8217;s right to obtain reimbursement from the Client for TRANSPERFECT LEGAL&#8217;s costs of collection, including but not limited to its fees, costs, expenses and reasonable attorneys&#8217; fees, shall apply to any litigation or arbitration that takes place in accordance herewith. The decision and award of the arbitrator(s) shall be final and binding upon the parties and may be enforced in any court of competent jurisdiction.</p>
+<div class="sow-tc-heading-inline">19) NO LEGAL ADVICE</div>
+<p>Client acknowledges and understands that neither TRANSPERFECT LEGAL nor any of its employees will be providing legal advice to Client and that an attorney-client relationship does not exist between TRANSPERFECT LEGAL and Client. Client agrees not to request that TRANSPERFECT LEGAL provide legal advice in connection with this Agreement or the Project. Notwithstanding the foregoing, the parties acknowledge that TRANSPERFECT LEGAL is being engaged to assist Client&#8217;s counsel&#8217;s representation of Client and that TRANSPERFECT LEGAL may obtain information from Client or its counsel that may be subject to the attorney-client, work-product and/or other applicable privileges and that such information is being provided to TRANSPERFECT LEGAL without any waiver of such privileges by Client.</p>
+<div class="sow-tc-heading-inline">20) ENTIRE AGREEMENT</div>
+<p>This Agreement represents the full and complete agreement with respect to the subject matter set forth herein, and supersedes any other agreements, promises, representations, whether written or oral.</p>
+<div class="sow-tc-heading-inline">21) SURVIVAL</div>
+<p>The terms of Paragraphs 1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 20 and 21, and other paragraphs which by their nature are intended to extend beyond termination, shall survive termination of this Agreement for any reason.</p>
+<p>The contents of this Agreement are proprietary to TRANSPERFECT LEGAL. Client shall not, without the prior written consent of TRANSPERFECT LEGAL, disclose this document or the contents herein to any third party.</p>
+</div>
+
+      <hr class="sow-rule">
+
+      <div class="sow-section-title">Client Billing Requirements</div>
+      <table class="sow-billing-table">
+        <tr><th colspan="2">Client Billing Requirements</th></tr>
+        <tr><td class="label-cell">Submitter's Name</td><td></td></tr>
+        <tr><td class="label-cell">Department / Team</td><td></td></tr>
+        <tr><td class="label-cell">PO Required? If so, please provide</td><td></td></tr>
+        <tr><td class="label-cell">Case / Reference No.</td><td>${matterName}</td></tr>
+        <tr><td class="label-cell">Currency</td><td>${cur === '£' ? 'GBP (£)' : cur === '$' ? 'USD ($)' : 'EUR (€)'}</td></tr>
+        <tr><td class="label-cell">Payment Terms</td><td>30 days</td></tr>
+        <tr><td colspan="2" style="background:#001F5F;color:white;font-weight:700;font-size:9pt;text-transform:uppercase;letter-spacing:0.05em;padding:6px 12px;">Requestor Information</td></tr>
+        <tr><td class="label-cell">Name</td><td>${g('clientContactName') || ''}</td></tr>
+        <tr><td class="label-cell">Company</td><td>${clientFirm}</td></tr>
+        <tr><td class="label-cell">Address</td><td>${g('clientAddr1') ? g('clientAddr1') + ', ' + g('clientAddr2') : ''}</td></tr>
+        <tr><td class="label-cell">Email</td><td>${g('clientEmail') || ''}</td></tr>
+        <tr><td colspan="2" style="background:#001F5F;color:white;font-weight:700;font-size:9pt;text-transform:uppercase;letter-spacing:0.05em;padding:6px 12px;">Contact Information for Billing Enquiries</td></tr>
+        <tr><td class="label-cell">Name</td><td>${g('tplAM') || ''}</td></tr>
+        <tr><td class="label-cell">Email</td><td>${g('tplEmail') || ''}</td></tr>
+      </table>
+
+      <hr class="sow-rule">
+
+      <p style="font-size:9pt;margin-bottom:20px;">In Witness, whereof, TransPerfect and the Client have caused this Agreement to be executed by their duly authorised officers or agents as of the day and year written below.</p>
+
+      <div class="sow-sig-block">
+        <div class="sig-col">
+          <h4>TransPerfect Document Management, Inc.</h4>
+          <div class="sig-line"></div>
+          <div class="sig-label">Signature</div>
+          <div class="sig-line"></div>
+          <div class="sig-label">Printed Name</div>
+          <div class="sig-line"></div>
+          <div class="sig-label">Title</div>
+          <div class="sig-line"></div>
+          <div class="sig-label">Date</div>
+        </div>
+        <div class="sig-col">
+          <h4>${clientFirm}</h4>
+          <div class="sig-line"></div>
+          <div class="sig-label">Signature</div>
+          <div class="sig-line"></div>
+          <div class="sig-label">Printed Name</div>
+          <div class="sig-line"></div>
+          <div class="sig-label">Title</div>
+          <div class="sig-line"></div>
+          <div class="sig-label">Date</div>
+        </div>
+      </div>
+
+    </div><!-- /sow-body -->
+
+    ${includeExhibit ? `
+    <!-- EXHIBIT: Details & Definitions -->
+    <div class="sow-body sow-tc-page-break">
+      <div class="sow-section-title">Details &amp; Definitions</div>
+
+      <div class="sow-phase-heading"><span class="phase-label">A. </span>FORENSIC SERVICE CASE PARAMETERS</div>
+      <ul class="sow-ul">
+        <li>All forensic collections and analysis services are provided by qualified forensic practitioners using industry-standard tools and methods.</li>
+        <li>Standard acquisitions include logical and physical device acquisitions, cloud collections, and email archive collections.</li>
+        <li>All collections are documented with appropriate chain-of-custody records.</li>
+        <li>Forensic consulting includes project oversight, client consultation, and review of forensic methodology.</li>
+        <li>Senior forensic consulting is required for remediation work, expert testimony, affidavit preparation, and advanced analytics.</li>
+        <li>After-hours and weekend rates apply to services scheduled outside of standard business hours (09:00–18:00 Mon–Fri, excluding UK public holidays).</li>
+      </ul>
+
+      <div class="sow-phase-heading"><span class="phase-label">B. </span>eDISCOVERY DEFINITIONS</div>
+      <ul class="sow-ul">
+        <li><strong>Native Review:</strong> Review of documents in their original file format.</li>
+        <li><strong>ECA (Early Case Assessment):</strong> Evaluating a collection before full review to understand scope and relevance.</li>
+        <li><strong>Processing:</strong> Converting raw data into reviewable format, including de-duplication, deNIST filtering, and indexing.</li>
+        <li><strong>Hosting:</strong> Providing a secure web-based review environment (Relativity or similar).</li>
+        <li><strong>TAR (Technology Assisted Review):</strong> Machine learning algorithms assisting in identifying relevant documents.</li>
+        <li><strong>Brainspace:</strong> Conceptual analytics and TAR platform integrated with Relativity.</li>
+        <li><strong>Productions:</strong> Disclosure of relevant documents to opposing parties in agreed format.</li>
+        <li><strong>Data Disposition:</strong> Secure deletion or return of client data at matter conclusion.</li>
+      </ul>
+
+      <div class="sow-phase-heading"><span class="phase-label">C. </span>MANAGED REVIEW</div>
+      <ul class="sow-ul">
+        <li>All managed reviewers are legally qualified or have equivalent experience and are trained on TransPerfect Legal's quality management protocols.</li>
+        <li>Review Managers are responsible for day-to-day review management, issue escalation, and quality control.</li>
+        <li>Project Managers provide strategic oversight, coordinating with counsel and ensuring timelines are met.</li>
+        <li>All review is conducted in accordance with an agreed review protocol, prepared in consultation with the instructing law firm.</li>
+        <li>TransPerfect Legal maintains a continuous quality assurance programme with a minimum 10% QC rate applied to all reviewer decisions.</li>
+        <li>Daily reporting on review progress is provided as standard.</li>
+      </ul>
+
+      <div class="sow-phase-heading"><span class="phase-label">D. </span>CASE CLOSURE OPTIONS</div>
+      <ul class="sow-ul">
+        <li>At matter conclusion, TransPerfect Legal will work with Client to agree appropriate data disposition procedures.</li>
+        <li>Options include: secure deletion of all hosted data; return of data to Client on encrypted media; transfer to a third-party platform nominated by Client.</li>
+        <li>All data disposition is documented and a certificate of destruction/transfer provided to Client upon request.</li>
+        <li>Archive storage is available at reduced rates for concluded matters where data must be retained for a defined period.</li>
+        <li>Database disposal fees apply for deletion of Relativity databases (flat fee under 1TB; per-GB over 1TB).</li>
+      </ul>
+    </div>
+    ` : ''}
+
+  </div><!-- /sow-doc -->
+  `;
+
+  return sow;
+}
+
+/* ══════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════ */
+function navigate(dir) {
+  const stepId = getCurrentStepId();
+
+  // Validate inclusions step
+  if (stepId === 'step-inclusions' && dir === 1) {
+    if (!inclusions.ratesheet && !inclusions.specificcosts) {
+      alert('Please select at least one option to include in the SOW.');
+      return;
+    }
+    // Determine flow and potentially rebuild step list
+    currentFlow = getFlow();
+  }
+
+  // Validate service selection
+  if (stepId === 'step-services' && dir === 1) {
+    if (getSelectedServices().length === 0) {
+      alert('Please select at least one service line to continue.');
+      return;
+    }
+  }
+
+  const steps = getSteps();
+  const next = currentStepIndex + dir;
+  if (next < 0 || next >= steps.length) return;
+
+  // On-enter hooks
+  const nextStepId = steps[next];
+  if (nextStepId === 'step-ratesheet') buildRateSheetTable();
+  if (nextStepId === 'step-specific-prices') buildFeeTables();
+  if (nextStepId === 'step-preview') {
+    document.getElementById('sow-preview-container').innerHTML = buildSOW();
+  }
+
+  // Hide current
+  document.getElementById(stepId).classList.remove('active');
+
+  currentStepIndex = next;
+
+  // Show next
+  document.getElementById(getCurrentStepId()).classList.add('active');
+
+  // Rerender step bar
+  renderStepBar();
+
+  // Update buttons
+  const totalSteps = getSteps().length;
+  document.getElementById('btn-back').style.visibility = currentStepIndex > 0 ? 'visible' : 'hidden';
+  document.getElementById('btn-next').textContent = currentStepIndex === totalSteps - 1 ? '✓ Done' : 'Next →';
+  document.getElementById('step-label').textContent = `Step ${currentStepIndex + 1} of ${totalSteps}`;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── Initialise wizard ── */
+function initWizard() {
+  currentFlow = 'start';
+  currentStepIndex = 0;
+  renderStepBar();
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('btn-back').style.visibility = 'hidden';
+  document.getElementById('btn-next').textContent = 'Next →';
+  document.getElementById('step-label').textContent = 'Step 1 of 2';
+}
+window.addEventListener('DOMContentLoaded', initWizard);
+
+/* ── Print SOW only (opens print dialog showing just the document) ── */
+function printSOW() {
+  const sowEl = document.getElementById('sow-preview-container');
+  if (!sowEl || !sowEl.innerHTML.trim()) {
+    alert('Please complete the form first.');
+    return;
+  }
+
+  const win = window.open('', '_blank', 'width=900,height=700');
+
+  // Get all inline styles from the page
+  const styles = Array.from(document.styleSheets)
+    .map(sheet => { try { return Array.from(sheet.cssRules).map(r => r.cssText).join('\n'); } catch(e) { return ''; } })
+    .join('\n');
+
+  win.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── Page setup ── */
+  @page {
+    size: A4;
+    margin: 14mm 14mm 18mm 14mm;
+  }
+  @page :first { margin: 0; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0; background: white;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* ── Cover ── */
+  .sow-cover {
+    margin: 0 !important;
+    padding: 0 !important;
+    page-break-after: always;
+    background: white;
+  }
+  .sow-cover-top-img { display: none !important; }
+  .sow-cover-logo-area {
+    text-align: center;
+    padding: 60px 60px 32px;
+    border-bottom: 2px solid #001F5F;
+    margin-bottom: 36px;
+  }
+  .sow-cover-logo {
+    height: 60px;
+    width: auto;
+    display: block;
+    margin: 0 auto 22px auto;
+  }
+  .sow-cover-subtitle {
+    font-size: 15pt;
+    font-weight: 700;
+    color: #001F5F;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .sow-cover-content {
+    padding: 0 60px 40px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .sow-cover-footer { display: none !important; }
+
+  /* ── Body pages ── */
+  .sow-body { padding: 0 !important; }
+  .sow-doc  { max-width: 100% !important; box-shadow: none !important; border: none !important; }
+
+  /* ── Parties table ── */
+  .sow-parties-table {
+    width: auto !important;
+    border: none !important;
+    border-collapse: collapse;
+    margin: 0 auto 18px auto;
+  }
+  .sow-parties-table th, .sow-parties-table td {
+    border: none !important;
+    background: transparent !important;
+  }
+
+  /* ── Page breaks ── */
+  .sow-tc-page-break  { page-break-before: always !important; margin-top: 0 !important; }
+  .sow-billing-start  { page-break-before: always !important; }
+  .sow-pricing-block, .sow-responsibility-block { page-break-inside: avoid; }
+
+  /* ── T&C two-column flow ── */
+  .sow-tc-columns {
+    column-count: 2;
+    column-gap: 24px;
+    column-rule: 1px solid #DEEAF6;
+    font-size: 7.8pt;
+    line-height: 1.5;
+    text-align: justify;
+    orphans: 2; widows: 2;
+  }
+  .sow-tc-columns p { margin: 0 0 5px 0; }
+  .sow-tc-heading-inline {
+    font-weight: 700; font-size: 7.8pt; color: #001F5F;
+    margin: 8px 0 3px 0; display: block; break-after: avoid-column;
+  }
+
+  /* ── Inject page styles ── */
+  ${styles}
+</style>
+</head>
+<body>
+<div class="sow-doc">${sowEl.innerHTML}</div>
+</body></html>`);
+
+  win.document.close();
+  win.onload = function() {
+    setTimeout(function() { win.focus(); win.print(); }, 800);
+  };
+}
+
+/* ── Download Word (.docx) via Netlify Function ── */
+async function downloadDocx() {
+  const btn = document.getElementById('btn-docx');
+  btn.textContent = 'Generating Word doc...';
+  btn.disabled = true;
+
+  try {
+    const g = id => document.getElementById(id) ? document.getElementById(id).value.trim() : '';
+
+    const clientFirm = g('clientFirm') || 'Client';
+    const matter = g('matter') || '';
+    const filename = matter
+      ? `TPL_SOW_${clientFirm.replace(/\s+/g,'_')}_${matter.replace(/\s+/g,'_')}.docx`
+      : `TPL_SOW_${clientFirm.replace(/\s+/g,'_')}.docx`;
+
+    // Collect specific cost data for the payload
+    const specificCostData = inclusions.specificcosts ? collectFeeData() : null;
+
+    // Collect rate-sheet rates (user may have edited them)
+    const rateSheetRates = inclusions.ratesheet ? collectRateSheetRates() : null;
+
+    const payload = {
+      filename,
+      clientContactName: g('clientContactName'),
+      clientFirm,
+      clientEntity: g('clientEntity'),
+      clientAddr1: g('clientAddr1'),
+      clientAddr2: g('clientAddr2'),
+      clientEmail: g('clientEmail'),
+      tplAM: g('tplAM'),
+      tplTitle: g('tplTitle'),
+      tplEmail: g('tplEmail'),
+      tplAddr1: g('tplAddr1'),
+      tplAddr2: g('tplAddr2'),
+      endClient: g('endClient'),
+      matter,
+      agreementDate: g('agreementDate'),
+      currency: g('currency') || '£',
+      includeRateSheet: inclusions.ratesheet,
+      includeSpecificCosts: inclusions.specificcosts,
+      includeExhibit,
+      selectedServices: getSelectedServices(),
+      specificCostData,
+      rateSheetRates,
+    };
+
+    const response = await fetch('/.netlify/functions/generate-docx', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err);
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error('DOCX generation failed:', err);
+    alert('Word document generation failed: ' + err.message);
+  } finally {
+    btn.textContent = '⬇ Download Word (.docx)';
+    btn.disabled = false;
+  }
+}
+
+/* ── Download PDF via Netlify Function (Puppeteer) ── */
+async function downloadPDF() {
+  const btn = document.getElementById('btn-pdf');
+  btn.textContent = 'Generating PDF...';
+  btn.disabled = true;
+
+  try {
+    // Get the SOW HTML content
+    const sowEl = document.getElementById('sow-preview-container');
+    const sowHTML = sowEl.innerHTML;
+
+    // Get filename
+    const clientFirm = (document.getElementById('clientFirm').value.trim() || 'SOW').replace(/\s+/g,'_');
+    const matter = (document.getElementById('matter').value.trim() || '').replace(/\s+/g,'_');
+    const filename = matter ? `TPL_SOW_${clientFirm}_${matter}.pdf` : `TPL_SOW_${clientFirm}.pdf`;
+
+    // Extract CSS from this page to send with the HTML
+    const styles = Array.from(document.styleSheets)
+      .map(sheet => {
+        try {
+          return Array.from(sheet.cssRules).map(r => r.cssText).join('\n');
+        } catch(e) { return ''; }
+      }).join('\n');
+
+    // Call the Netlify function
+    const response = await fetch('/.netlify/functions/generate-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sowHTML, styles, filename })
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err);
+    }
+
+    // Download the PDF
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error('PDF generation failed:', err);
+    alert('PDF generation failed. Please try Print → Save as PDF instead.');
+  } finally {
+    btn.textContent = '⬇ Download PDF';
+    btn.disabled = false;
+  }
+}
+
+/* ── Download ── */
+/* ── Download ── */
+function downloadHTML() {
+  const sowEl = document.getElementById('sow-preview-container');
+  const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>TPL SOW</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;600&family=Poppins:wght@300;400;600;700&display=swap');
+    body{margin:0;padding:20px;font-family:'Open Sans',Arial,sans-serif;background:#f4f7fb;}
+    ${Array.from(document.styleSheets).map(s=>{try{return Array.from(s.cssRules).map(r=>r.cssText).join('')}catch(e){return ''}}).join('')}
+  </style></head><body>${sowEl.innerHTML}</body></html>`], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'TPL_SOW.html';
+  a.click();
+}
+
+function openEditable() {
+  const sowEl = document.getElementById('sow-preview-container');
+  if (!sowEl || !sowEl.innerHTML.trim()) {
+    alert('Please complete the form first.');
+    return;
+  }
+  const styles = Array.from(document.styleSheets)
+    .map(sheet => { try { return Array.from(sheet.cssRules).map(r => r.cssText).join('\n'); } catch(e) { return ''; } })
+    .join('\n');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>TPL SOW — Editable</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; padding: 20px; background: #F4F7FB; }
+  .toolbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+    background: #001F5F; color: white;
+    padding: 10px 24px; display: flex; align-items: center; gap: 16px;
+    font-family: system-ui, sans-serif; font-size: 13px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .toolbar strong { font-size: 14px; }
+  .toolbar .hint { opacity: 0.7; font-size: 12px; }
+  .toolbar button {
+    margin-left: auto; padding: 7px 16px; background: #139DD8;
+    color: white; border: none; border-radius: 6px; cursor: pointer;
+    font-size: 13px; font-weight: 600;
+  }
+  @media print {
+    .toolbar { display: none !important; }
+    .doc-wrapper { margin-top: 0 !important; }
+    body { padding: 0; background: white; }
+  }
+  .doc-wrapper { margin-top: 52px; max-width: 800px; margin-left: auto; margin-right: auto; }
+  .sow-doc { background: white; box-shadow: 0 2px 20px rgba(0,31,95,0.1); }
+  [contenteditable]:focus { outline: 2px solid rgba(19,157,216,0.4); }
+  ${styles}
+</style>
+</head><body>
+<div class="toolbar">
+  <strong>✏️ Editable SOW</strong>
+  <span class="hint">Click any text to edit it directly</span>
+  <button onclick="window.print()">🖨 Print / Save PDF</button>
+</div>
+<div class="doc-wrapper">
+  <div class="sow-doc" contenteditable="true" spellcheck="true">${sowEl.innerHTML}</div>
+</div>
+</body></html>`);
+  win.document.close();
+}
+
+
+</script>
+</body>
+</html>
