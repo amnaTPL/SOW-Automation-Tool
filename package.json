@@ -1,0 +1,13 @@
+{
+  "name": "tpl-sow-generator",
+  "version": "1.0.0",
+  "description": "TPL SOW Generator",
+  "scripts": {
+    "build": "echo 'No build step'"
+  },
+  "dependencies": {
+    "@sparticuz/chromium-min": "^123.0.0",
+    "docx": "^8.5.0",
+    "puppeteer-core": "^22.6.0"
+  }
+}
